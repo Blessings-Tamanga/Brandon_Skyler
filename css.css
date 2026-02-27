@@ -23,6 +23,9 @@
 
         html {
             scroll-behavior: smooth;
+            /* prevent horizontal overflow on html itself */
+            max-width: 100vw;
+            overflow-x: hidden;
         }
 
         body {
@@ -739,7 +742,7 @@
         /* ===== ACTING SECTION ===== */
         .acting-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2.5rem;
             margin-top: 4rem;
         }
@@ -793,7 +796,7 @@
         /* ===== TEAM SECTION ===== */
         .team-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 2.5rem;
             margin-top: 4rem;
         }
@@ -895,12 +898,15 @@
             grid-template-columns: 1fr 1fr;
             gap: 5rem;
             margin-top: 4rem;
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         .contact-form {
             display: flex;
             flex-direction: column;
             gap: 2rem;
+            max-width: 100%;
         }
 
         .form-group {
@@ -920,6 +926,8 @@
         .form-group input,
         .form-group select,
         .form-group textarea {
+            width: 100%;
+            box-sizing: border-box;
             padding: 0.95rem 1.25rem;
             background: rgba(201, 169, 97, 0.04);
             border: 1px solid rgba(201, 169, 97, 0.15);
@@ -948,6 +956,7 @@
             display: flex;
             flex-direction: column;
             gap: 2.5rem;
+            max-width: 100%;
         }
 
         .contact-info h3 {
@@ -1006,6 +1015,7 @@
             border: 1px solid rgba(201, 169, 97, 0.15);
             border-radius: 3px;
             margin-top: 3rem;
+            max-width: 100%;
         }
 
         .newsletter h4 {
@@ -1030,6 +1040,7 @@
 
         .newsletter-form input {
             flex: 1;
+            min-width: 0;
             padding: 0.9rem 1.25rem;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(201, 169, 97, 0.15);
@@ -1120,8 +1131,9 @@
 
         /* About image and float animation */
         .about-image {
-            width: 360px;
-            max-width: 100%;
+            /* allow shrinking on small screens */
+            width: 100%;
+            max-width: 360px;
             margin-bottom: 1.25rem;
             border-radius: 6px;
             overflow: hidden;
@@ -1371,6 +1383,24 @@
 
         /* ===== RESPONSIVE ===== */
 
+        /* enforce shrink behavior on grid/flex children */
+        .section-container,
+        .about-content,
+        .contact-wrapper,
+        .releases-grid,
+        .gallery-grid,
+        .acting-grid,
+        .team-grid,
+        .hero-content {
+            min-width: 0;
+        }
+
+        /* global word wrapping to avoid long unbroken strings */
+        p, h1, h2, h3, h4, h5, h6, a {
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
         /* ensure media elements scale correctly */
         img, video, iframe, embed, svg {
             max-width: 100%;
@@ -1385,10 +1415,20 @@
             }
         }
 
+        @media (max-width: 1024px) {
+            /* collapse contact section into one column for tablets */
+            .contact-wrapper {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+        }
+
         @media (max-width: 768px) {
             nav {
                 padding: 0 1.5rem;
             }
+            /* reduce newsletter padding on smaller screens */
+            .newsletter { padding: 1.5rem; }
             /* mobile nav covers full viewport and scrolls if needed */
             .nav-menu {
                 display: none;
@@ -1415,6 +1455,15 @@
             .nav-menu a {
                 font-size: 1.25rem;
                 text-align: center;
+            }
+            /* grid collapse for medium screens */
+            .acting-grid,
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            .team-image {
+                width: 170px;
+                height: 170px;
             }
 
             .nav-menu {
@@ -1450,7 +1499,7 @@
             .about-content,
             .contact-wrapper {
                 grid-template-columns: 1fr;
-                gap: 3rem;
+                gap: 2rem; /* tighten up spacing on small phones */
             }
 
             .stats-grid {
@@ -1536,11 +1585,26 @@
 
         @media (max-width: 480px) {
             nav {
-                padding: 0 1rem;
+                padding: 0 0.5rem;
             }
 
             section {
-                padding: 3rem 1rem;
+                padding: 3rem 0.5rem;
+            }
+
+            /* very small phones */
+            @media (max-width: 360px) {
+                .hero h1 {
+                    font-size: 1.6rem;
+                }
+
+                .hero p {
+                    font-size: 0.95rem;
+                }
+
+                .btn {
+                    padding: 0.85rem 1.5rem;
+                }
             }
 
             .hero {
@@ -1566,5 +1630,18 @@
 
             section h2 {
                 font-size: 1.5rem;
+            }
+
+            /* ensure acting and team stacks vertically */
+            .acting-grid,
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+
+            /* shrink team portraits */
+            .team-image {
+                width: 150px;
+                height: 150px;
+                margin-top: 0;
             }
         }
