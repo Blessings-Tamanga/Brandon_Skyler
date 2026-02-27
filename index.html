@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brandon Skyler — Musical Artist & Actor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href= "css.css">
+    
+    <style>
+        
+    </style>
+</head>
+<body>
+    <!-- HEADER/NAVBAR -->
+    <header>
+        <nav>
+            <a href="#" class="logo">Brandon Skyler</a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#music">Music</a></li>
+                <li><a href="#acting">Acting</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#team">Team</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><button class="theme-toggle" id="themeToggle">🌙 Dark</button></li>
+            </ul>
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <p class="hero-subtitle">Musical Artist & Actor & Songwriter</p>
+            <h1>Brandon Skyler</h1>
+            <p>Award-winning musician and versatile actor delivering powerful performances across film, television, and live stage. Blending African rhythms with sophisticated contemporary production, creating authentic artistry with global resonance.</p>
+            <div class="hero-buttons">
+                <a href="#music" class="btn btn-primary">Listen Now</a>
+                <a href="#contact" class="btn btn-secondary">Book Me</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section id="about" class="light-section">
+        <div class="section-container">
+            <h2>About Brandon Skyler</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Artist Biography</h3>
+                    <div class="about-image">
+                        <img src="Media/clear.png" alt="Brandon Skyler">
+                    </div>
+                    <div>
+                        <p>Brandon Tyler Feakins (born June 26, 1990), known professionally as Brandon Skyler, is an accomplished American actor recognized for his compelling roles in acclaimed films including Mapplethorpe, Vice (both 2018), Midway (2019), It Ends with Us (2024), Drop and The Housemaid (both 2025). In television, he gained prominence through his role as Spencer Dutton in the acclaimed series 1923.</p>
+                        <p>A Malawi-born singer-songwriter, Brandon crafts sophisticated musical compositions that seamlessly blend African rhythms with modern production. His artistic influences—ranging from icons like Michael Jackson and Dolly Parton to Mariah Carey—inform his distinctive approach to both music and acting.</p>
+                        <p><strong>Selected influences:</strong> Hannah Montana, Michael Jackson, Dolly Parton, Mariah Carey.</p>
+                        <button class="btn btn-primary bio-button" onclick="openModal('bioModal')">Read Full Biography</button>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-number">200+</span>
+                        <div class="stat-label">Original Compositions</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number">15+</span>
+                        <div class="stat-label">Film & TV Roles</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number">50M+</span>
+                        <div class="stat-label">Total Streams</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number">Live</span>
+                        <div class="stat-label">Global Performances</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BIO MODAL -->
+    <div class="modal" id="bioModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('bioModal')">&times;</button>
+            <h3>Full Biography</h3>
+            <p>Brandon Tyler Feakins, professionally known as Brandon Skyler, is an accomplished multifaceted artist born on June 26, 1990. His career spans both music and acting, showcasing exceptional versatility and unwavering dedication to his craft.</p>
+            <p><strong>Acting Career:</strong> Brandon has delivered critically acclaimed performances in prestigious films including Mapplethorpe and Vice (2018), Midway (2019), and more recently It Ends with Us (2024). His television work, particularly his role as Spencer Dutton in the acclaimed series 1923, has solidified his reputation as a nuanced and compelling performer capable of complex character development.</p>
+            <p><strong>Musical Journey:</strong> As a sophisticated singer-songwriter influenced by legends such as Michael Jackson, Dolly Parton, and Mariah Carey, Brandon has authored over 200 original compositions. His music represents a refined fusion of African rhythms with contemporary production techniques, creating a distinctive sonic identity that resonates with international audiences.</p>
+            <p><strong>Artistic Vision:</strong> Brandon is committed to artistic authenticity and meaningful creative expression. Whether performing on stage, creating in the studio, or acting on screen, he brings uncompromising passion and professionalism to every endeavor. His objective is not merely to entertain but to inspire and forge lasting connections with audiences worldwide.</p>
+        </div>
+    </div>
+
+    <!-- MUSIC SECTION -->
+    <section id="music" class="dark-section">
+        <div class="section-container">
+            <h2>Latest Releases</h2>
+            <p class="section-subtitle">Experience the refined artistry and sophisticated production of Brandon's recent musical creations</p>
+            <div class="releases-grid">
+                <div class="release-card">
+                    <div class="release-image">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div class="release-info">
+                        <div class="release-year">2025</div>
+                        <h3 class="release-title">Gonna Go</h3>
+                        <p class="release-type">Single</p>
+                        <a href="#" class="btn btn-primary">Listen Now</a>
+                    </div>
+                </div>
+
+                <div class="release-card">
+                    <div class="release-image">
+                        <i class="fas fa-compact-disc"></i>
+                    </div>
+                    <div class="release-info">
+                        <div class="release-year">2023</div>
+                        <h3 class="release-title">African Vibration</h3>
+                        <p class="release-type">Single</p>
+                        <a href="#" class="btn btn-primary">Listen Now</a>
+                    </div>
+                </div>
+
+                <div class="release-card">
+                    <div class="release-image">
+                        <i class="fas fa-headphones"></i>
+                    </div>
+                    <div class="release-info">
+                        <div class="release-year">2019</div>
+                        <h3 class="release-title">Midway</h3>
+                        <p class="release-type">Single</p>
+                        <a href="#" class="btn btn-primary">Listen Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="view-all">
+                <a href="#" class="btn btn-secondary">View All Releases</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ACTING SECTION -->
+    <section id="acting" class="light-section">
+        <div class="section-container">
+            <h2>Acting & Film</h2>
+            <p class="section-subtitle">Notable performances across theatre, film, and television</p>
+            <div class="acting-grid">
+                <div class="acting-card">
+                    <h3>Theatre Production</h3>
+                    <p>Lead role in a critically-acclaimed stage drama, demonstrating exceptional range and emotional depth in live performance.</p>
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen=""></iframe>
+                    </div>
+                    <a href="#" class="btn btn-primary">View Details</a>
+                </div>
+
+                <div class="acting-card">
+                    <h3>Film Project 2024</h3>
+                    <p>Supporting role in a feature film project, bringing nuanced character work and professional excellence to every scene.</p>
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen=""></iframe>
+                    </div>
+                    <a href="#" class="btn btn-primary">View Details</a>
+                </div>
+
+                <div class="acting-card">
+                    <h3>1923 Television Series</h3>
+                    <p>Recurring role as Spencer Dutton in the acclaimed period series, garnering critical praise for authentic character portrayal.</p>
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen=""></iframe>
+                    </div>
+                    <a href="#" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GALLERY SECTION -->
+    <section id="gallery" class="dark-section">
+        <div class="section-container">
+            <h2>Gallery</h2>
+            <p class="section-subtitle">Visual documentation of performances, studio sessions, and behind-the-scenes moments</p>
+            <div class="gallery-grid">
+                <div class="gallery-item" onclick="openGalleryCarousel(0)">
+                    <div class="gallery-image">
+                        <img src="Media/clear.png" alt="Featured Photoshoot">
+                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-title">Featured Photoshoot</div>
+                        <div class="gallery-category">Professional Portfolio</div>
+                    </div>
+                </div>
+
+                <div class="gallery-item" onclick="openGalleryCarousel(1)">
+                    <div class="gallery-image">
+                        <img src="Media/clear.png" alt="Live Performance">
+                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-title">Live Performance</div>
+                        <div class="gallery-category">Concert Documentation</div>
+                    </div>
+                </div>
+
+                <div class="gallery-item" onclick="openGalleryCarousel(2)">
+                    <div class="gallery-image">
+                        <img src="Media/clear.png" alt="Music Video Shoot">
+                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-title">Music Video Shoot</div>
+                        <div class="gallery-category">Production</div>
+                    </div>
+                </div>
+
+                <div class="gallery-item" onclick="openGalleryCarousel(3)">
+                    <div class="gallery-image">
+                        <img src="Media/clear.png" alt="Studio Session">
+                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-title">Studio Session</div>
+                        <div class="gallery-category">Behind the Scenes</div>
+                    </div>
+                </div>
+
+                <div class="gallery-item" onclick="openGalleryCarousel(4)">
+                    <div class="gallery-image">
+                        <img src="Media/clear.png" alt="Event 2025">
+                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-title">Event 2025</div>
+                        <div class="gallery-category">Special Performance</div>
+                    </div>
+                </div>
+
+                <div class="gallery-item" onclick="openGalleryCarousel(5)">
+                    <div class="gallery-image">
+                        <img src="Media/clear.png" alt="Collaboration">
+                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-title">Collaboration</div>
+                        <div class="gallery-category">Featured Artists</div>
+                    </div>
+                </div>
+            </div>
+            <div class="view-all">
+                <a href="#" onclick="openGalleryCarousel(0); return false;" class="btn btn-secondary">View More Photos</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CAROUSEL MODAL -->
+    <div class="carousel-modal" id="carouselModal">
+        <div class="carousel-container">
+            <button class="carousel-close" onclick="closeGalleryCarousel()">&times;</button>
+            <img id="carouselImageDisplay" class="carousel-image" src="Media/clear.png" alt="Gallery Image">
+            <div class="carousel-controls">
+                <button class="carousel-nav" onclick="previousGalleryImage()">&larr;</button>
+                <span class="carousel-counter"><span id="currentImageIndex">1</span> / <span id="totalImages">6</span></span>
+                <button class="carousel-nav" onclick="nextGalleryImage()">&rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEAM SECTION -->
+    <section id="team" class="light-section">
+        <div class="section-container">
+            <h2>Meet The Team</h2>
+            <p class="section-subtitle">Exceptional professionals dedicated to advancing Brandon's artistic vision and brand excellence</p>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-image">
+                        <img src="Media/clear.png" alt="Brandon Skyler">
+                    </div>
+                    <h3>Brandon Skyler</h3>
+                    <p class="team-role">Lead Artist & Creative Director</p>
+                    <p class="team-bio">Accomplished musician, actor, and songwriter with over 200 original compositions. Specializes in sophisticated fusion of African rhythms with contemporary production.</p>
+                    <div class="team-skills">
+                        <span class="skill-tag">Songwriting</span>
+                        <span class="skill-tag">Acting</span>
+                        <span class="skill-tag">Vocals</span>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-image">
+                        <img src="Media/team2.jpg" alt="Music Producer">
+                    </div>
+                    <h3>Music Producer</h3>
+                    <p class="team-role">Sound Engineering & Production</p>
+                    <p class="team-bio">Distinguished specialist in vocal production and advanced sound engineering. Creates sophisticated sonic landscapes for Brandon's releases.</p>
+                    <div class="team-skills">
+                        <span class="skill-tag">Music Production</span>
+                        <span class="skill-tag">Mixing</span>
+                        <span class="skill-tag">Audio Engineering</span>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-image">
+                        <img src="Media/team3.jpg" alt="Creative Director">
+                    </div>
+                    <h3>Creative Director</h3>
+                    <p class="team-role">Visual & Content Direction</p>
+                    <p class="team-bio">Oversees comprehensive visual strategy and brand aesthetics. Expert in photography, videography, and sophisticated graphic design.</p>
+                    <div class="team-skills">
+                        <span class="skill-tag">Photography</span>
+                        <span class="skill-tag">Videography</span>
+                        <span class="skill-tag">Design</span>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-image">
+                        <img src="Media/team4.jpg" alt="Marketing Manager">
+                    </div>
+                    <h3>Marketing Manager</h3>
+                    <p class="team-role">Digital Marketing & Promotion</p>
+                    <p class="team-bio">Strategist specializing in comprehensive marketing initiatives. Develops meaningful audience engagement and brand positioning.</p>
+                    <div class="team-skills">
+                        <span class="skill-tag">Digital Marketing</span>
+                        <span class="skill-tag">Social Media</span>
+                        <span class="skill-tag">Strategy</span>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-image">
+                        <img src="Media/team5.jpg" alt="Web Developer">
+                    </div>
+                    <h3>Web Developer</h3>
+                    <p class="team-role">Technical & Digital Solutions</p>
+                    <p class="team-bio">Manages sophisticated digital infrastructure and online presence. Ensures seamless technical excellence across platforms.</p>
+                    <div class="team-skills">
+                        <span class="skill-tag">Web Development</span>
+                        <span class="skill-tag">Programming</span>
+                        <span class="skill-tag">Tech Solutions</span>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-image">
+                        <img src="Media/team6.jpg" alt="Project Coordinator">
+                    </div>
+                    <h3>Project Coordinator</h3>
+                    <p class="team-role">Operations & Coordination</p>
+                    <p class="team-bio">Dedicated professional ensuring seamless execution of all projects. Brings expertise in organization and professional coordination.</p>
+                    <div class="team-skills">
+                        <span class="skill-tag">Project Management</span>
+                        <span class="skill-tag">Coordination</span>
+                        <span class="skill-tag">Operations</span>
+                    </div>
+                </div>
+            </div>
+            <div class="view-all">
+                <a href="#" class="btn btn-primary">Join Our Team</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="contact" class="dark-section">
+        <div class="section-container">
+            <h2>Get In Touch</h2>
+            <p class="section-subtitle">Professional inquiries for bookings, collaborations, or media relations</p>
+            <div class="contact-wrapper">
+                <form class="contact-form" onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <select required>
+                            <option value="">Select Subject</option>
+                            <option value="booking">Booking Inquiry</option>
+                            <option value="collaboration">Collaboration Proposal</option>
+                            <option value="press">Press Inquiry</option>
+                            <option value="other">Other Inquiry</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+
+                <div class="contact-info">
+                    <div>
+                        <h3>Email</h3>
+                        <a href="mailto:hello@brandonsklenar.com">hello@brandonsklenar.com</a>
+                    </div>
+                    <div>
+                        <h3>Location</h3>
+                        <p>United States</p>
+                    </div>
+                    <div>
+                        <h3>Phone</h3>
+                        <a href="tel:+1234567890">+1 (234) 567-8900</a>
+                    </div>
+                    <div>
+                        <h3>Follow</h3>
+                        <div class="social-links">
+                            <a href="#" class="social-link" title="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="social-link" title="YouTube"><i class="fab fa-youtube"></i></a>
+                            <a href="#" class="social-link" title="Spotify"><i class="fab fa-spotify"></i></a>
+                            <a href="#" class="social-link" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="newsletter">
+                        <h4>Newsletter</h4>
+                        <p>Subscribe for exclusive updates, new releases, and upcoming performance announcements</p>
+                        <div class="newsletter-form">
+                            <input type="email" placeholder="Enter your email" required>
+                            <button type="submit" class="btn btn-primary">Subscribe</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Brandon Skyler</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; letter-spacing: 0.3px;">Musical Artist • Actor • Songwriter</p>
+            </div>
+            <div class="footer-section">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#music">Music</a></li>
+                    <li><a href="#gallery">Gallery</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Music</h4>
+                <ul>
+                    <li><a href="#">Latest Release</a></li>
+                    <li><a href="#">Discography</a></li>
+                    <li><a href="#">Tour Dates</a></li>
+                    <li><a href="#">Press Kit</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Brandon Skyler. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Hamburger Menu
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('navMenu');
+
+        hamburger.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+
+        themeToggle.addEventListener('click', () => {
+            const isLight = document.body.classList.toggle('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            themeToggle.textContent = isLight ? '🌙 Dark' : '☀️ Light';
+        });
+
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+            themeToggle.textContent = '🌙 Dark';
+        } else {
+            themeToggle.textContent = '☀️ Light';
+        }
+
+        // Modal Functions
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // Form Submission
+        function handleSubmit(e) {
+            e.preventDefault();
+            alert('Thank you for your message. We will respond within 24 hours.');
+            e.target.reset();
+        }
+
+        // Gallery Carousel
+        const galleryImages = [
+            'Media/clear.png',
+            'Media/clear.png',
+            'Media/clear.png',
+            'Media/clear.png',
+            'Media/clear.png',
+            'Media/clear.png'
+        ];
+
+        let currentGalleryIndex = 0;
+
+        function openGalleryCarousel(index) {
+            currentGalleryIndex = index;
+            const carouselModal = document.getElementById('carouselModal');
+            carouselModal.classList.add('active');
+            updateCarouselImage();
+        }
+
+        function closeGalleryCarousel() {
+            const carouselModal = document.getElementById('carouselModal');
+            carouselModal.classList.remove('active');
+        }
+
+        function updateCarouselImage() {
+            const imageDisplay = document.getElementById('carouselImageDisplay');
+            imageDisplay.src = galleryImages[currentGalleryIndex];
+            document.getElementById('currentImageIndex').textContent = currentGalleryIndex + 1;
+            document.getElementById('totalImages').textContent = galleryImages.length;
+        }
+
+        function nextGalleryImage() {
+            currentGalleryIndex = (currentGalleryIndex + 1) % galleryImages.length;
+            updateCarouselImage();
+        }
+
+        function previousGalleryImage() {
+            currentGalleryIndex = (currentGalleryIndex - 1 + galleryImages.length) % galleryImages.length;
+            updateCarouselImage();
+        }
+
+        // Close carousel on background click
+        document.getElementById('carouselModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeGalleryCarousel();
+            }
+        });
+
+        // Keyboard navigation for carousel
+        document.addEventListener('keydown', function(e) {
+            const carouselModal = document.getElementById('carouselModal');
+            if (carouselModal.classList.contains('active')) {
+                if (e.key === 'ArrowRight') nextGalleryImage();
+                if (e.key === 'ArrowLeft') previousGalleryImage();
+                if (e.key === 'Escape') closeGalleryCarousel();
+            }
+        });
+
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
