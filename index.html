@@ -102,42 +102,9 @@
         <div class="section-container">
             <h2>Latest Releases</h2>
             <p class="section-subtitle">Experience the refined artistry and sophisticated production of Brandon's recent musical creations</p>
-            <div class="releases-grid">
-                <div class="release-card">
-                    <div class="release-image">
-                        <i class="fas fa-music"></i>
-                    </div>
-                    <div class="release-info">
-                        <div class="release-year">2025</div>
-                        <h3 class="release-title">Gonna Go</h3>
-                        <p class="release-type">Single</p>
-                        <a href="#" class="btn btn-primary">Listen Now</a>
-                    </div>
-                </div>
-
-                <div class="release-card">
-                    <div class="release-image">
-                        <i class="fas fa-compact-disc"></i>
-                    </div>
-                    <div class="release-info">
-                        <div class="release-year">2023</div>
-                        <h3 class="release-title">African Vibration</h3>
-                        <p class="release-type">Single</p>
-                        <a href="#" class="btn btn-primary">Listen Now</a>
-                    </div>
-                </div>
-
-                <div class="release-card">
-                    <div class="release-image">
-                        <i class="fas fa-headphones"></i>
-                    </div>
-                    <div class="release-info">
-                        <div class="release-year">2019</div>
-                        <h3 class="release-title">Midway</h3>
-                        <p class="release-type">Single</p>
-                        <a href="#" class="btn btn-primary">Listen Now</a>
-                    </div>
-                </div>
+            <div class="releases-grid" id="releasesGrid">
+                <!-- cards will be injected by JavaScript -->
+            </div>
             </div>
             <div class="view-all">
                 <a href="#" class="btn btn-secondary">View All Releases</a>
@@ -523,11 +490,29 @@
             }
         });
 
-        // Form Submission
-        function handleSubmit(e) {
+        // Form Submission – send data to server API instead of just alerting
+        async function handleSubmit(e) {
             e.preventDefault();
-            alert('Thank you for your message. We will respond within 24 hours.');
-            e.target.reset();
+            const form = e.target;
+            const data = {
+                name: form.name.value,
+                email: form.email.value,
+                subject: form.subject.value,
+                message: form.message.value,
+                timestamp: Date.now()
+            };
+            try {
+                await fetch('/api/contactMessages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                alert('Thank you for your message. We will respond within 24 hours.');
+                form.reset();
+            } catch (err) {
+                console.error(err);
+                alert('There was a problem submitting your message. Please try again later.');
+            }
         }
 
         // Gallery Carousel
@@ -598,6 +583,29 @@
                 }
             });
         });
+
+        // fetch and populate front‑end data from API
+        async function initializeFrontPage() {
+            try {
+                const releases = await fetch('/api/musicReleases').then(r => r.json());
+                const grid = document.getElementById('releasesGrid');
+                grid.innerHTML = releases.map(item => `
+                    <div class="release-card">
+                        <div class="release-image"><i class="fas ${item.cover}"></i></div>
+                        <div class="release-info">
+                            <div class="release-year">${item.year}</div>
+                            <h3 class="release-title">${item.title}</h3>
+                            <p class="release-type">${item.type}</p>
+                            <a href="#" class="btn btn-primary">Listen Now</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Failed to load releases', err);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initializeFrontPage);
     </script>
 </body>
 </html>

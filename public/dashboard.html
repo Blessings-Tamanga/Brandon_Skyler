@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brandon Skyler · Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* ===== EXACT VARIABLES FROM YOUR MAIN SITE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #0a0a0e;
+            --secondary-dark: #12121a;
+            --tertiary-dark: #1a1a24;
+            --accent-gold: #a861c9;
+            --accent-light: #e8dcc8;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #808080;
+            --bg-gradient: linear-gradient(135deg, #0a0a0e 0%, #0f0f17 50%, #12121a 100%);
+            --header-bg: rgba(10, 10, 14, 0.85);
+            --card-bg: linear-gradient(135deg, rgba(201, 169, 97, 0.04) 0%, rgba(201, 169, 97, 0.01) 100%);
+            --gradient-1: linear-gradient(135deg, #0a0a0e 0%, #1a1a24 100%);
+            --gradient-2: linear-gradient(135deg, #12121a 0%, #1f1f2e 100%);
+            --gradient-3: linear-gradient(180deg, rgba(201, 169, 97, 0.1) 0%, rgba(201, 169, 97, 0) 100%);
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            letter-spacing: 0.3px;
+        }
+
+        body.light-mode {
+            --text-primary: #1a1a1a;
+            --text-secondary: #555555;
+            --text-tertiary: #888888;
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e8f1f8 50%, #f0e8f8 100%);
+            --header-bg: rgba(245, 247, 250, 0.85);
+            --card-bg: linear-gradient(135deg, rgba(100, 150, 200, 0.05) 0%, rgba(120, 100, 180, 0.05) 100%);
+            --accent-gold: #4a7ba7;
+        }
+
+        /* ===== LOGIN ===== */
+        #loginOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .login-box {
+            background: var(--secondary-dark);
+            padding: 2.5rem;
+            border-radius: 3px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid rgba(168, 97, 201, 0.15);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .login-box h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--accent-gold);
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 0.95rem 1.25rem;
+            margin-bottom: 1rem;
+            background: rgba(168, 97, 201, 0.04);
+            border: 1px solid rgba(168, 97, 201, 0.15);
+            border-radius: 3px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            background: rgba(168, 97, 201, 0.06);
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #b97ad9 100%);
+            color: var(--primary-dark);
+            border: none;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .login-box button:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.05);
+        }
+
+        /* ===== DASHBOARD ===== */
+        #adminDashboard {
+            display: none;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .admin-header h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1.5px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 0.75rem 1.5rem;
+            border-radius: 3px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: rgba(168, 97, 201, 0.12);
+            transform: translateY(-2px);
+        }
+
+        /* stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(168, 97, 201, 0.15);
+            border-radius: 3px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: 0.4s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 10px 30px rgba(168, 97, 201, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-family: 'Space Mono', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .stat-card p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* ===== TABS - RESTYLED TO MATCH MAIN SITE NAVIGATION ===== */
+        .section-tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(168, 97, 201, 0.1);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            font-family: 'Sora', sans-serif;
+            position: relative;
+        }
+
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gold);
+            transition: width 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--accent-gold);
+        }
+
+        .tab-btn:hover::after {
+            width: 100%;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-gold);
+        }
+
+        .tab-btn.active::after {
+            width: 100%;
+        }
+
+        /* panels */
+        .admin-panel {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid rgba(168, 97, 201, 0.15);
+            border-radius: 3px;
+            padding: 2rem;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.85rem 2.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Sora', sans-serif;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #b97ad9 100%);
+            color: var(--primary-dark);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.05);
+            letter-spacing: 0.8px;
+        }
+
+        .btn-danger {
+            background: #c44545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b33;
+            transform: translateY(-2px);
+        }
+
+        /* item cards */
+        .item-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .item-card {
+            background: rgba(168, 97, 201, 0.02);
+            border: 1px solid rgba(168, 97, 201, 0.1);
+            padding: 1.5rem;
+            border-radius: 3px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .item-card:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .item-info h4 {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .item-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .item-actions button {
+            background: transparent;
+            border: 1px solid rgba(168, 97, 201, 0.3);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .item-actions button:hover {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: var(--primary-dark);
+        }
+
+        /* modal */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.2s;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: var(--secondary-dark);
+            padding: 3rem;
+            border-radius: 3px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(168, 97, 201, 0.15);
+            position: relative;
+        }
+
+        .modal-content h3 {
+            font-family: 'Space Mono', monospace;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-gold);
+        }
+
+        .modal-content input,
+        .modal-content textarea,
+        .modal-content select {
+            width: 100%;
+            padding: 0.95rem 1.25rem;
+            margin-bottom: 1rem;
+            background: rgba(168, 97, 201, 0.04);
+            border: 1px solid rgba(168, 97, 201, 0.15);
+            border-radius: 3px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .modal-content input:focus,
+        .modal-content textarea:focus,
+        .modal-content select:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            background: rgba(168, 97, 201, 0.06);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* messages */
+        .message-item {
+            background: rgba(168, 97, 201, 0.02);
+            border: 1px solid rgba(168, 97, 201, 0.1);
+            padding: 1.5rem;
+            border-radius: 3px;
+            margin-bottom: 1rem;
+        }
+
+        .message-item strong {
+            color: var(--accent-gold);
+        }
+
+        .message-item small {
+            color: var(--text-tertiary);
+        }
+
+        /* responsive */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .admin-header h1 {
+                font-size: 1.5rem;
+            }
+            .panel-header {
+                flex-direction: column;
+                align-items: start;
+                gap: 1rem;
+            }
+            .tab-btn {
+                padding: 0.5rem 1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .section-tabs {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN OVERLAY -->
+    <div id="loginOverlay">
+        <div class="login-box">
+            <h2>Admin Login</h2>
+            <input type="text" id="username" placeholder="Username" value="admin">
+            <input type="password" id="password" placeholder="Password" value="password">
+            <button onclick="handleLogin()">Sign In</button>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="adminDashboard">
+        <div class="admin-header">
+            <h1>Dashboard · Brandon Skyler</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsContainer"></div>
+
+        <!-- Tabs -->
+        <div class="section-tabs">
+            <button class="tab-btn active" data-tab="music">Music</button>
+            <button class="tab-btn" data-tab="acting">Acting</button>
+            <button class="tab-btn" data-tab="gallery">Gallery</button>
+            <button class="tab-btn" data-tab="team">Team</button>
+            <button class="tab-btn" data-tab="messages">Messages</button>
+        </div>
+
+        <!-- MUSIC PANEL -->
+        <div id="musicPanel" class="admin-panel active">
+            <div class="panel-header">
+                <h2>Manage Music Releases</h2>
+                <button class="btn btn-primary" onclick="openMusicModal()">+ Add Release</button>
+            </div>
+            <div id="musicList" class="item-list"></div>
+        </div>
+
+        <!-- ACTING PANEL -->
+        <div id="actingPanel" class="admin-panel">
+            <div class="panel-header">
+                <h2>Manage Acting Projects</h2>
+                <button class="btn btn-primary" onclick="openActingModal()">+ Add Project</button>
+            </div>
+            <div id="actingList" class="item-list"></div>
+        </div>
+
+        <!-- GALLERY PANEL -->
+        <div id="galleryPanel" class="admin-panel">
+            <div class="panel-header">
+                <h2>Manage Gallery Images</h2>
+                <button class="btn btn-primary" onclick="openGalleryModal()">+ Add Image</button>
+            </div>
+            <div id="galleryList" class="item-list"></div>
+        </div>
+
+        <!-- TEAM PANEL -->
+        <div id="teamPanel" class="admin-panel">
+            <div class="panel-header">
+                <h2>Manage Team Members</h2>
+                <button class="btn btn-primary" onclick="openTeamModal()">+ Add Member</button>
+            </div>
+            <div id="teamList" class="item-list"></div>
+        </div>
+
+        <!-- MESSAGES PANEL -->
+        <div id="messagesPanel" class="admin-panel">
+            <div class="panel-header">
+                <h2>Contact Messages</h2>
+                <button class="btn btn-danger" onclick="clearMessages()">Clear All</button>
+            </div>
+            <div id="messagesList"></div>
+        </div>
+    </div>
+
+    <!-- MODAL FOR EDIT/ADD -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Add Item</h3>
+            <form id="modalForm" onsubmit="saveModalItem(event)">
+                <div id="modalFields"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ---------- HELPER: SERVER API REQUEST ----------
+        async function apiRequest(resource, method = 'GET', body = null, queryParams = '') {
+            let url = `/api/${resource}` + (queryParams ? `?${queryParams}` : '');
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(url, opts);
+            if (!res.ok) throw new Error(`API ${res.status} ${res.statusText}`);
+            return res.json();
+        }
+
+        // note: data is no longer kept in localStorage, server is the source of truth.
+        // the initData() helper and sample data are removed; the backend will supply
+        // any initial content (see /lib/db.js and /pages/api/*).
+        
+        // ---------- STATS ----------
+
+        // ---------- LOGIN ----------
+        async function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (username === 'admin' && password === 'password') {
+                sessionStorage.setItem('adminAuth', 'true');
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                await loadStats();
+                await loadMusic();
+                await loadActing();
+                await loadGallery();
+                await loadTeam();
+                await loadMessages();
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('adminAuth');
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('adminDashboard').style.display = 'none';
+        }
+
+        if (sessionStorage.getItem('adminAuth') === 'true') {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+            // fire-and-forget is okay, but we want stats to appear quickly
+            loadStats();
+            loadMusic();
+            loadActing();
+            loadGallery();
+            loadTeam();
+            loadMessages();
+        }
+
+        // ---------- STATS ----------
+        async function loadStats() {
+            // grab all collections in parallel
+            const [music, acting, gallery, team, messages] = await Promise.all([
+                apiRequest('musicReleases'),
+                apiRequest('actingProjects'),
+                apiRequest('galleryItems'),
+                apiRequest('teamMembers'),
+                apiRequest('contactMessages')
+            ]);
+            document.getElementById('statsContainer').innerHTML = `
+                <div class="stat-card"><h3>${music.length}</h3><p>Music Releases</p></div>
+                <div class="stat-card"><h3>${acting.length}</h3><p>Acting Projects</p></div>
+                <div class="stat-card"><h3>${gallery.length}</h3><p>Gallery Images</p></div>
+                <div class="stat-card"><h3>${team.length}</h3><p>Team Members</p></div>
+                <div class="stat-card"><h3>${messages.length}</h3><p>Messages</p></div>
+            `;
+        }
+
+        // ---------- TAB SWITCHING ----------
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(tab + 'Panel').classList.add('active');
+            });
+        });
+
+        // ---------- MUSIC CRUD ----------
+        async function loadMusic() {
+            const items = await apiRequest('musicReleases');
+            document.getElementById('musicList').innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-info">
+                        <h4>${item.title} (${item.year})</h4>
+                        <p>${item.type}</p>
+                    </div>
+                    <div class="item-actions">
+                        <button onclick="editMusic(${item.id})">Edit</button>
+                        <button onclick="deleteMusic(${item.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        async function deleteMusic(id) {
+            await apiRequest('musicReleases', 'DELETE', null, `id=${id}`);
+            await loadMusic();
+            await loadStats();
+        }
+        async function editMusic(id) {
+            const items = await apiRequest('musicReleases');
+            const item = items.find(i => i.id === id);
+            openMusicModal(item);
+        }
+        function openMusicModal(item = null) {
+            document.getElementById('modalTitle').innerText = item ? 'Edit Music Release' : 'Add Music Release';
+            document.getElementById('modalFields').innerHTML = `
+                <input type="hidden" id="musicId" value="${item ? item.id : ''}">
+                <input type="text" id="musicYear" placeholder="Year" value="${item ? item.year : ''}" required>
+                <input type="text" id="musicTitle" placeholder="Title" value="${item ? item.title : ''}" required>
+                <input type="text" id="musicType" placeholder="Type (Single/Album)" value="${item ? item.type : ''}" required>
+                <input type="text" id="musicCover" placeholder="Cover icon class (e.g. fa-music)" value="${item ? item.cover : 'fa-music'}" required>
+            `;
+            document.getElementById('itemModal').classList.add('active');
+            window.currentModalType = 'music';
+        }
+
+        // ---------- ACTING CRUD ----------
+        async function loadActing() {
+            const items = await apiRequest('actingProjects');
+            document.getElementById('actingList').innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-info">
+                        <h4>${item.title}</h4>
+                        <p>${item.description.substring(0,60)}...</p>
+                    </div>
+                    <div class="item-actions">
+                        <button onclick="editActing(${item.id})">Edit</button>
+                        <button onclick="deleteActing(${item.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        async function deleteActing(id) {
+            await apiRequest('actingProjects','DELETE',null,`id=${id}`);
+            await loadActing();
+            await loadStats();
+        }
+        async function editActing(id) {
+            const items = await apiRequest('actingProjects');
+            const item = items.find(i => i.id === id);
+            openActingModal(item);
+        }
+        function openActingModal(item = null) {
+            document.getElementById('modalTitle').innerText = item ? 'Edit Acting Project' : 'Add Acting Project';
+            document.getElementById('modalFields').innerHTML = `
+                <input type="hidden" id="actingId" value="${item ? item.id : ''}">
+                <input type="text" id="actingTitle" placeholder="Title" value="${item ? item.title : ''}" required>
+                <textarea id="actingDescription" placeholder="Description" required>${item ? item.description : ''}</textarea>
+                <input type="text" id="actingVideo" placeholder="YouTube Video ID (e.g. dQw4w9WgXcQ)" value="${item ? item.video : ''}" required>
+                <input type="text" id="actingLink" placeholder="Link (e.g. #)" value="${item ? item.link : '#'}" required>
+            `;
+            document.getElementById('itemModal').classList.add('active');
+            window.currentModalType = 'acting';
+        }
+
+        // ---------- GALLERY CRUD ----------
+        async function loadGallery() {
+            const items = await apiRequest('galleryItems');
+            document.getElementById('galleryList').innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-info">
+                        <h4>${item.title}</h4>
+                        <p>${item.category}</p>
+                    </div>
+                    <div class="item-actions">
+                        <button onclick="editGallery(${item.id})">Edit</button>
+                        <button onclick="deleteGallery(${item.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        async function deleteGallery(id) {
+            await apiRequest('galleryItems','DELETE',null,`id=${id}`);
+            await loadGallery();
+            await loadStats();
+        }
+        async function editGallery(id) {
+            const items = await apiRequest('galleryItems');
+            const item = items.find(i => i.id === id);
+            openGalleryModal(item);
+        }
+        function openGalleryModal(item = null) {
+            document.getElementById('modalTitle').innerText = item ? 'Edit Gallery Image' : 'Add Gallery Image';
+            document.getElementById('modalFields').innerHTML = `
+                <input type="hidden" id="galleryId" value="${item ? item.id : ''}">
+                <input type="text" id="gallerySrc" placeholder="Image path (e.g. Media/clear.png)" value="${item ? item.src : 'Media/clear.png'}" required>
+                <input type="text" id="galleryTitle" placeholder="Title" value="${item ? item.title : ''}" required>
+                <input type="text" id="galleryCategory" placeholder="Category" value="${item ? item.category : ''}" required>
+            `;
+            document.getElementById('itemModal').classList.add('active');
+            window.currentModalType = 'gallery';
+        }
+
+        // ---------- TEAM CRUD ----------
+        async function loadTeam() {
+            const items = await apiRequest('teamMembers');
+            document.getElementById('teamList').innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-info">
+                        <h4>${item.name}</h4>
+                        <p>${item.role}</p>
+                    </div>
+                    <div class="item-actions">
+                        <button onclick="editTeam(${item.id})">Edit</button>
+                        <button onclick="deleteTeam(${item.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        async function deleteTeam(id) {
+            await apiRequest('teamMembers','DELETE',null,`id=${id}`);
+            await loadTeam();
+            await loadStats();
+        }
+        async function editTeam(id) {
+            const items = await apiRequest('teamMembers');
+            const item = items.find(i => i.id === id);
+            openTeamModal(item);
+        }
+        function openTeamModal(item = null) {
+            document.getElementById('modalTitle').innerText = item ? 'Edit Team Member' : 'Add Team Member';
+            document.getElementById('modalFields').innerHTML = `
+                <input type="hidden" id="teamId" value="${item ? item.id : ''}">
+                <input type="text" id="teamName" placeholder="Name" value="${item ? item.name : ''}" required>
+                <input type="text" id="teamRole" placeholder="Role" value="${item ? item.role : ''}" required>
+                <textarea id="teamBio" placeholder="Bio" required>${item ? item.bio : ''}</textarea>
+                <input type="text" id="teamImage" placeholder="Image path" value="${item ? item.image : 'Media/clear.png'}" required>
+                <input type="text" id="teamSkills" placeholder="Skills (comma separated)" value="${item ? item.skills.join(', ') : ''}" required>
+            `;
+            document.getElementById('itemModal').classList.add('active');
+            window.currentModalType = 'team';
+        }
+
+        // ---------- SAVE MODAL ----------
+        async function saveModalItem(e) {
+            e.preventDefault();
+            const type = window.currentModalType;
+            let route;
+            let payload;
+            if (type === 'music') {
+                route = 'musicReleases';
+                const id = document.getElementById('musicId').value;
+                payload = {
+                    id: id ? parseInt(id) : Date.now(),
+                    year: document.getElementById('musicYear').value,
+                    title: document.getElementById('musicTitle').value,
+                    type: document.getElementById('musicType').value,
+                    cover: document.getElementById('musicCover').value
+                };
+            } else if (type === 'acting') {
+                route = 'actingProjects';
+                const id = document.getElementById('actingId').value;
+                payload = {
+                    id: id ? parseInt(id) : Date.now(),
+                    title: document.getElementById('actingTitle').value,
+                    description: document.getElementById('actingDescription').value,
+                    video: document.getElementById('actingVideo').value,
+                    link: document.getElementById('actingLink').value
+                };
+            } else if (type === 'gallery') {
+                route = 'galleryItems';
+                const id = document.getElementById('galleryId').value;
+                payload = {
+                    id: id ? parseInt(id) : Date.now(),
+                    src: document.getElementById('gallerySrc').value,
+                    title: document.getElementById('galleryTitle').value,
+                    category: document.getElementById('galleryCategory').value
+                };
+            } else if (type === 'team') {
+                route = 'teamMembers';
+                const id = document.getElementById('teamId').value;
+                const skills = document.getElementById('teamSkills').value.split(',').map(s => s.trim());
+                payload = {
+                    id: id ? parseInt(id) : Date.now(),
+                    name: document.getElementById('teamName').value,
+                    role: document.getElementById('teamRole').value,
+                    bio: document.getElementById('teamBio').value,
+                    image: document.getElementById('teamImage').value,
+                    skills: skills
+                };
+            }
+            // choose POST for new vs PUT for existing item
+            if (payload) {
+                const method = payload.id && (await apiRequest(route)).some(i => i.id === payload.id) ? 'PUT' : 'POST';
+                await apiRequest(route, method, payload);
+            }
+            await loadStats();
+            closeModal();
+        }
+
+        function closeModal() {
+            document.getElementById('itemModal').classList.remove('active');
+        }
+
+        // ---------- MESSAGES ----------
+        async function loadMessages() {
+            const messages = await apiRequest('contactMessages');
+            const container = document.getElementById('messagesList');
+            if (messages.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-tertiary);">No messages yet.</p>';
+                return;
+            }
+            container.innerHTML = messages
+                .slice() // copy so we can reverse without mutating
+                .reverse()
+                .map(m => `
+                <div class="message-item">
+                    <strong>${m.name}</strong> (${m.email}) · <small>${m.subject}</small>
+                    <p>${m.message}</p>
+                    <small>${new Date(m.timestamp).toLocaleString()}</small>
+                </div>
+            `).join('');
+        }
+
+        async function clearMessages() {
+            if (confirm('Delete all messages?')) {
+                // bulk delete isn't implemented yet; just overwrite with empty array
+                await apiRequest('contactMessages', 'PUT', []);
+                await loadMessages();
+                await loadStats();
+            }
+        }
+
+        // Close modal on outside click
+        document.getElementById('itemModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Make functions global
+        window.handleLogin = handleLogin;
+        window.logout = logout;
+        window.loadStats = loadStats;
+        window.loadMusic = loadMusic;
+        window.loadActing = loadActing;
+        window.loadGallery = loadGallery;
+        window.loadTeam = loadTeam;
+        window.loadMessages = loadMessages;
+        window.openMusicModal = openMusicModal;
+        window.editMusic = editMusic;
+        window.deleteMusic = deleteMusic;
+        window.openActingModal = openActingModal;
+        window.editActing = editActing;
+        window.deleteActing = deleteActing;
+        window.openGalleryModal = openGalleryModal;
+        window.editGallery = editGallery;
+        window.deleteGallery = deleteGallery;
+        window.openTeamModal = openTeamModal;
+        window.editTeam = editTeam;
+        window.deleteTeam = deleteTeam;
+        window.saveModalItem = saveModalItem;
+        window.closeModal = closeModal;
+        window.clearMessages = clearMessages;
+    </script>
+</body>
+</html>
