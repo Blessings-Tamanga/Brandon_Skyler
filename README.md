@@ -29,10 +29,11 @@ curl -X POST https://yourdomain.vercel.app/api/musicReleases -d '{"id":123, "tit
 
 ## Running locally
 
-1. Install dependencies:
+1. Install dependencies (including the Supabase client):
 
    ```bash
    npm install
+   npm install @supabase/supabase-js
    ```
 
 2. Start development server:
@@ -50,7 +51,14 @@ curl -X POST https://yourdomain.vercel.app/api/musicReleases -d '{"id":123, "tit
 3. Build settings are automatic for Next.js; simply deploy.
 4. When deployed, static assets like `dashboard.html` are available at `/dashboard.html`, and API routes at `/api/*`.
 
-> **Persistence warning:** the example backend uses a local JSON file which is fine for prototype/demo, but Vercel serverless functions have a read-only filesystem in production. Switch to a proper database (MongoDB Atlas, Firebase, Supabase, Vercel KV, etc.) before storing real data.
+> **Persistence warning:** the example backend uses a local JSON file which is fine for prototype/demo, but Vercel serverless functions have an ephemeral filesystem. Data written to `data.json` will be lost on each deployment. Below are a couple of free-tier options you can integrate immediately:
+>
+> * **Supabase** – open‑source hosted Postgres with a generous free tier. The code already includes Supabase support; just create a project, add tables matching the resource names (`musicReleases`, `actingProjects`, etc.), then add `SUPABASE_URL` and `SUPABASE_ANON_KEY` as environment variables in your Vercel dashboard. The API handler will automatically use Supabase when those vars are set.
+> * **Vercel KV** – a serverless key‑value store available on all Vercel accounts (free tier). You could adapt `lib/db.js` to read/write from `@vercel/kv` instead.
+>
+> Other free services you might consider include Firebase Realtime Database / Firestore, MongoDB Atlas, or a free PostgreSQL plan on Railway/Planetscale. Use whatever fits your comfort level; just update `pages/api/[resource].js` accordingly.
+>
+> The existing code falls back to the file-based datastructure when no external service is configured, so you can continue developing locally without any setup.
 
 ## Front‑end changes
 
