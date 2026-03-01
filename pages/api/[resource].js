@@ -48,7 +48,12 @@ export default async function handler(req, res) {
       }
     } catch (err) {
       console.error('Supabase error', err);
-      return res.status(500).json({ error: err.message || 'Server error' });
+      // Return empty array instead of error object for consistency
+      const emptyResult = {};
+      ['musicReleases', 'actingProjects', 'galleryItems', 'teamMembers', 'contactMessages'].forEach(key => {
+        emptyResult[key] = [];
+      });
+      return res.status(200).json(emptyResult[table] || []);
     }
   }
 

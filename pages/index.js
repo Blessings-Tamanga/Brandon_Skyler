@@ -22,7 +22,12 @@ export default function Home() {
     try {
       const response = await fetch('/api/musicReleases');
       const data = await response.json();
-      setReleases(data);
+      // Only set if data is an array; ignore errors or non-array responses
+      if (Array.isArray(data)) {
+        setReleases(data);
+      } else {
+        console.warn('API returned non-array response:', data);
+      }
     } catch (err) {
       console.error('Failed to load releases:', err);
     }
