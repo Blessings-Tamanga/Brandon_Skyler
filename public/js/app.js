@@ -20,14 +20,14 @@ const themeToggle = document.getElementById('themeToggle');
 themeToggle.addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light-mode');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    themeToggle.textContent = isLight ? '🌙 Dark' : '☀️ Light';
+    themeToggle.textContent = isLight ? 'Dark' : 'Light';
 });
 
 if (localStorage.getItem('theme') === 'light') {
     document.body.classList.add('light-mode');
-    themeToggle.textContent = '🌙 Dark';
+    themeToggle.textContent = 'Dark';
 } else {
-    themeToggle.textContent = '☀️ Light';
+    themeToggle.textContent = 'Light';
 }
 
 // Modal Functions
@@ -45,7 +45,7 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// Form Submission – send data to server API instead of just alerting
+// Form submission: send data to server API instead of just alerting
 async function handleSubmit(e) {
     e.preventDefault();
     const form = e.target;
@@ -139,7 +139,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// fetch and populate front‑end data from API
+// Fetch and populate front-end data from API
 async function initializeFrontPage() {
     try {
         const releases = await fetch('/api/musicReleases').then(r => r.json());
@@ -165,3 +165,4 @@ async function initializeFrontPage() {
 }
 
 window.addEventListener('DOMContentLoaded', initializeFrontPage);
+
