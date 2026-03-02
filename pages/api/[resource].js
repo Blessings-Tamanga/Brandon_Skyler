@@ -1,101 +1,127 @@
 import { readData, writeData } from '../../lib/db';
 import { supabase } from '../../lib/supabase';
 
-// utility to detect if Supabase client is configured
+const VALID_RESOURCES = new Set([
+  'musicReleases',
+  'actingProjects',
+  'galleryItems',
+  'teamMembers',
+  'contactMessages'
+]);
+
 const hasSupabase = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY);
+
+async function handleFileStore(req, res, resource) {
+  const data = await readData();
+  const items = data[resource];
+
+  if (!Array.isArray(items)) {
+    return res.status(404).json({ error: 'Resource not found' });
+  }
+
+  try {
+    switch (req.method) {
+      case 'GET':
+        return res.status(200).json(items);
+      case 'POST': {
+        const newItem = req.body;
+        items.push(newItem);
+        await writeData(data);
+        return res.status(201).json(newItem);
+      }
+      case 'PUT': {
+        if (Array.isArray(req.body)) {
+          data[resource] = req.body;
+        } else {
+          const { id, ...rest } = req.body;
+          data[resource] = items.map((i) => (i.id === id ? { id, ...rest } : i));
+        }
+        await writeData(data);
+        return res.status(200).json(data[resource]);
+      }
+      case 'DELETE': {
+        const { id } = req.query;
+        data[resource] = items.filter((i) => i.id !== Number(id));
+        await writeData(data);
+        return res.status(200).json({ ok: true });
+      }
+      default:
+        res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
+        return res.status(405).end(`Method ${req.method} Not Allowed`);
+    }
+  } catch (err) {
+    const isWrite = req.method !== 'GET';
+    if (isWrite) {
+      return res.status(500).json({
+        error: 'File storage write failed. Configure Supabase for persistent writes on Vercel.',
+        details: String(err.message || err)
+      });
+    }
+    return res.status(500).json({ error: 'File storage read failed.' });
+  }
+}
+
+async function handleSupabaseStore(req, res, resource) {
+  const table = resource;
+  switch (req.method) {
+    case 'GET': {
+      const { data, error } = await supabase.from(table).select('*');
+      if (error) throw error;
+      return res.status(200).json(data || []);
+    }
+    case 'POST': {
+      const { data, error } = await supabase.from(table).insert(req.body).select();
+      if (error) throw error;
+      return res.status(201).json(data || []);
+    }
+    case 'PUT': {
+      if (Array.isArray(req.body)) {
+        // Replace full collection (used by dashboard clear-all flows).
+        const { error: deleteError } = await supabase.from(table).delete().not('id', 'is', null);
+        if (deleteError) throw deleteError;
+        if (req.body.length === 0) return res.status(200).json([]);
+        const { data, error } = await supabase.from(table).insert(req.body).select();
+        if (error) throw error;
+        return res.status(200).json(data || []);
+      }
+
+      const { id, ...rest } = req.body;
+      if (typeof id === 'undefined') {
+        return res.status(400).json({ error: 'Missing id in PUT payload.' });
+      }
+      const { data, error } = await supabase.from(table).update(rest).eq('id', id).select();
+      if (error) throw error;
+      return res.status(200).json(data || []);
+    }
+    case 'DELETE': {
+      const { id } = req.query;
+      if (typeof id === 'undefined') {
+        return res.status(400).json({ error: 'Missing id in query string.' });
+      }
+      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (error) throw error;
+      return res.status(200).json({ ok: true });
+    }
+    default:
+      res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
+      return res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
+}
 
 export default async function handler(req, res) {
   const { resource } = req.query;
+  if (!VALID_RESOURCES.has(resource)) {
+    return res.status(404).json({ error: 'Resource not found' });
+  }
 
-  // prefer Supabase if available
   if (hasSupabase) {
-    // table names should correspond exactly to resource names used in front end
-    const table = resource;
     try {
-      switch (req.method) {
-        case 'GET': {
-          const { data, error } = await supabase.from(table).select('*');
-          if (error) throw error;
-          return res.status(200).json(data);
-        }
-        case 'POST': {
-          const { data, error } = await supabase.from(table).insert(req.body);
-          if (error) throw error;
-          return res.status(201).json(data);
-        }
-        case 'PUT': {
-          if (Array.isArray(req.body)) {
-            // bulk upsert
-            const { data, error } = await supabase.from(table).upsert(req.body);
-            if (error) throw error;
-            return res.status(200).json(data);
-          } else {
-            const { id, ...rest } = req.body;
-            const { data, error } = await supabase.from(table).update(rest).eq('id', id);
-            if (error) throw error;
-            return res.status(200).json(data);
-          }
-        }
-        case 'DELETE': {
-          const { id } = req.query;
-          const { data, error } = await supabase.from(table).delete().eq('id', id);
-          if (error) throw error;
-          return res.status(200).json({ ok: true });
-        }
-        default:
-          res.setHeader('Allow', ['GET','POST','PUT','DELETE']);
-          return res.status(405).end(`Method ${req.method} Not Allowed`);
-      }
+      return await handleSupabaseStore(req, res, resource);
     } catch (err) {
-      console.error('Supabase error', err);
-      // Return empty array instead of error object for consistency
-      const emptyResult = {};
-      ['musicReleases', 'actingProjects', 'galleryItems', 'teamMembers', 'contactMessages'].forEach(key => {
-        emptyResult[key] = [];
-      });
-      return res.status(200).json(emptyResult[table] || []);
+      console.error('Supabase error, falling back to file store:', err);
+      return handleFileStore(req, res, resource);
     }
   }
 
-  // fallback to file-based implementation for local/dev
-  const data = await readData();
-  if (!data[resource]) {
-    res.status(404).json({ error: 'Resource not found' });
-    return;
-  }
-
-  const items = data[resource];
-
-  switch (req.method) {
-    case 'GET':
-      res.status(200).json(items);
-      break;
-    case 'POST':
-      // create new item
-      const newItem = req.body;
-      items.push(newItem);
-      await writeData(data);
-      res.status(201).json(newItem);
-      break;
-    case 'PUT':
-      // full replace or bulk write
-      if (Array.isArray(req.body)) {
-        data[resource] = req.body;
-      } else {
-        const { id, ...rest } = req.body;
-        data[resource] = items.map(i => (i.id === id ? { id, ...rest } : i));
-      }
-      await writeData(data);
-      res.status(200).json(data[resource]);
-      break;
-    case 'DELETE':
-      const { id } = req.query;
-      data[resource] = items.filter(i => i.id !== parseInt(id, 10));
-      await writeData(data);
-      res.status(200).json({ ok: true });
-      break;
-    default:
-      res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
+  return handleFileStore(req, res, resource);
 }

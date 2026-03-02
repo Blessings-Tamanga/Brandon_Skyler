@@ -566,8 +566,17 @@
             const opts = { method, headers: { 'Content-Type': 'application/json' } };
             if (body) opts.body = JSON.stringify(body);
             const res = await fetch(url, opts);
-            if (!res.ok) throw new Error(`API ${res.status} ${res.statusText}`);
-            return res.json();
+            let payload;
+            try {
+                payload = await res.json();
+            } catch {
+                payload = null;
+            }
+            if (!res.ok) {
+                const details = payload && payload.error ? `: ${payload.error}` : '';
+                throw new Error(`API ${res.status} ${res.statusText}${details}`);
+            }
+            return payload;
         }
 
         // note: data is no longer kept in localStorage, server is the source of truth.
@@ -584,12 +593,16 @@
                 sessionStorage.setItem('adminAuth', 'true');
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('adminDashboard').style.display = 'block';
-                await loadStats();
-                await loadMusic();
-                await loadActing();
-                await loadGallery();
-                await loadTeam();
-                await loadMessages();
+                try {
+                    await loadStats();
+                    await loadMusic();
+                    await loadActing();
+                    await loadGallery();
+                    await loadTeam();
+                    await loadMessages();
+                } catch (err) {
+                    alert(`Dashboard failed to load: ${err.message}`);
+                }
             } else {
                 alert('Invalid credentials');
             }
@@ -689,7 +702,7 @@
                 <div class="item-card">
                     <div class="item-info">
                         <h4>${item.title}</h4>
-                        <p>${item.description.substring(0,60)}...</p>
+                        <p>${(item.description || '').substring(0,60)}...</p>
                     </div>
                     <div class="item-actions">
                         <button onclick="editActing(${item.id})">Edit</button>
@@ -853,6 +866,10 @@
                 await apiRequest(route, method, payload);
             }
             await loadStats();
+            if (type === 'music') await loadMusic();
+            if (type === 'acting') await loadActing();
+            if (type === 'gallery') await loadGallery();
+            if (type === 'team') await loadTeam();
             closeModal();
         }
 
