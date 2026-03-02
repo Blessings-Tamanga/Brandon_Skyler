@@ -116,7 +116,7 @@ export default function Home() {
         {/* HERO SECTION */}
         <section id="home" className="hero">
           <div className="hero-content">
-            <p className="hero-subtitle">Musical Artist & Actor & Songwriter</p>
+            <p className="hero-subtitle">Musical Actor</p>
             <h1>Brandon Skyler</h1>
             <p>Award-winning musician and versatile actor delivering powerful performances across film, television, and live stage. Blending African rhythms with sophisticated contemporary production, creating authentic artistry with global resonance.</p>
             <div className="hero-buttons">
