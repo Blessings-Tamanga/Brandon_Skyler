@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brandon Skyler · Admin</title>
+    <title>Brandon Skyler - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -79,6 +79,13 @@
             color: var(--accent-gold);
         }
 
+        .login-help {
+            margin-top: 0.75rem;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
         .login-box input {
             width: 100%;
             padding: 0.95rem 1.25rem;
@@ -139,6 +146,45 @@
             font-size: 2rem;
             font-weight: 700;
             color: var(--accent-gold);
+        }
+
+        .status-banner {
+            border: 1px solid rgba(168, 97, 201, 0.2);
+            background: rgba(168, 97, 201, 0.08);
+            padding: 0.9rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .status-banner.warning {
+            border-color: rgba(196, 69, 69, 0.45);
+            background: rgba(196, 69, 69, 0.12);
+        }
+
+        .quick-guide {
+            border: 1px solid rgba(168, 97, 201, 0.2);
+            background: rgba(168, 97, 201, 0.04);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quick-guide h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.65rem;
+            color: var(--accent-gold);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .quick-guide ol {
+            margin-left: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .quick-guide li {
+            margin-bottom: 0.45rem;
         }
 
         .logout-btn {
@@ -477,15 +523,27 @@
             <input type="text" id="username" placeholder="Username" value="admin">
             <input type="password" id="password" placeholder="Password" value="password">
             <button id="loginBtn">Sign In</button>
+            <p class="login-help">Default login: username <strong>admin</strong>, password <strong>password</strong>.</p>
         </div>
     </div>
 
     <!-- ADMIN DASHBOARD -->
     <div id="adminDashboard">
         <div class="admin-header">
-            <h1>Dashboard · Brandon Skyler</h1>
+            <h1>Dashboard - Brandon Skyler</h1>
             <button class="logout-btn" id="logoutBtn">Logout</button>
         </div>
+        <div id="statusBanner" class="status-banner">Checking system status...</div>
+        <section class="quick-guide">
+            <h2>Simple Guide (For First-Time Users)</h2>
+            <ol>
+                <li>Click a tab: Music, Acting, Gallery, Team, or Messages.</li>
+                <li>Click <strong>Add</strong> to create a new item.</li>
+                <li>Fill the form fields and click <strong>Save</strong>.</li>
+                <li>Use <strong>Edit</strong> to update an item or <strong>Delete</strong> to remove it.</li>
+                <li>Refresh your website page to confirm updates are visible.</li>
+            </ol>
+        </section>
 
         <!-- Stats -->
         <div class="stats-grid" id="statsContainer"></div>
@@ -579,6 +637,26 @@
             return payload;
         }
 
+        function setStatusBanner(message, isWarning = false) {
+            const banner = document.getElementById('statusBanner');
+            if (!banner) return;
+            banner.textContent = message;
+            banner.classList.toggle('warning', isWarning);
+        }
+
+        async function loadSystemStatus() {
+            try {
+                const status = await fetch('/api/status').then(r => r.json());
+                if (status.storageMode === 'supabase') {
+                    setStatusBanner('Storage: Supabase (cloud). Your changes should persist.', false);
+                } else {
+                    setStatusBanner('Storage: Local file mode. On Vercel, writes may fail unless Supabase is configured.', true);
+                }
+            } catch (err) {
+                setStatusBanner('Could not check system status. Please try again.', true);
+            }
+        }
+
         // note: data is no longer kept in localStorage, server is the source of truth.
         // the initData() helper and sample data are removed; the backend will supply
         // any initial content (see /lib/db.js and /pages/api/*).
@@ -594,12 +672,14 @@
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('adminDashboard').style.display = 'block';
                 try {
+                    await loadSystemStatus();
                     await loadStats();
                     await loadMusic();
                     await loadActing();
                     await loadGallery();
                     await loadTeam();
                     await loadMessages();
+                    setStatusBanner(document.getElementById('statusBanner').textContent + ' Dashboard loaded successfully.');
                 } catch (err) {
                     alert(`Dashboard failed to load: ${err.message}`);
                 }
@@ -618,6 +698,7 @@
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('adminDashboard').style.display = 'block';
             // fire-and-forget is okay, but we want stats to appear quickly
+            loadSystemStatus();
             loadStats();
             loadMusic();
             loadActing();
@@ -659,6 +740,9 @@
         // ---------- BUTTON WIRING ----------
         function wireStaticButtons() {
             document.getElementById('loginBtn').addEventListener('click', handleLogin);
+            document.getElementById('password').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
             document.getElementById('logoutBtn').addEventListener('click', logout);
             document.getElementById('addMusicBtn').addEventListener('click', () => openMusicModal());
             document.getElementById('addActingBtn').addEventListener('click', () => openActingModal());
@@ -670,20 +754,23 @@
 
         // Handle dynamic Edit/Delete buttons rendered into lists
         function wireDelegatedActions() {
-            document.addEventListener('click', (e) => {
+            document.addEventListener('click', async (e) => {
                 const actionBtn = e.target.closest('button[data-action]');
                 if (!actionBtn) return;
                 const action = actionBtn.dataset.action;
                 const id = Number(actionBtn.dataset.id);
-
-                if (action === 'edit-music') editMusic(id);
-                if (action === 'delete-music') deleteMusic(id);
-                if (action === 'edit-acting') editActing(id);
-                if (action === 'delete-acting') deleteActing(id);
-                if (action === 'edit-gallery') editGallery(id);
-                if (action === 'delete-gallery') deleteGallery(id);
-                if (action === 'edit-team') editTeam(id);
-                if (action === 'delete-team') deleteTeam(id);
+                try {
+                    if (action === 'edit-music') await editMusic(id);
+                    if (action === 'delete-music') await deleteMusic(id);
+                    if (action === 'edit-acting') await editActing(id);
+                    if (action === 'delete-acting') await deleteActing(id);
+                    if (action === 'edit-gallery') await editGallery(id);
+                    if (action === 'delete-gallery') await deleteGallery(id);
+                    if (action === 'edit-team') await editTeam(id);
+                    if (action === 'delete-team') await deleteTeam(id);
+                } catch (err) {
+                    setStatusBanner(`Action failed: ${err.message}`, true);
+                }
             });
         }
 
@@ -704,9 +791,11 @@
             `).join('');
         }
         async function deleteMusic(id) {
+            if (!confirm('Delete this music release?')) return;
             await apiRequest('musicReleases', 'DELETE', null, `id=${id}`);
             await loadMusic();
             await loadStats();
+            setStatusBanner('Music release deleted successfully.');
         }
         async function editMusic(id) {
             const items = await apiRequest('musicReleases');
@@ -743,9 +832,11 @@
             `).join('');
         }
         async function deleteActing(id) {
+            if (!confirm('Delete this acting project?')) return;
             await apiRequest('actingProjects','DELETE',null,`id=${id}`);
             await loadActing();
             await loadStats();
+            setStatusBanner('Acting project deleted successfully.');
         }
         async function editActing(id) {
             const items = await apiRequest('actingProjects');
@@ -782,9 +873,11 @@
             `).join('');
         }
         async function deleteGallery(id) {
+            if (!confirm('Delete this gallery image?')) return;
             await apiRequest('galleryItems','DELETE',null,`id=${id}`);
             await loadGallery();
             await loadStats();
+            setStatusBanner('Gallery image deleted successfully.');
         }
         async function editGallery(id) {
             const items = await apiRequest('galleryItems');
@@ -820,9 +913,11 @@
             `).join('');
         }
         async function deleteTeam(id) {
+            if (!confirm('Delete this team member?')) return;
             await apiRequest('teamMembers','DELETE',null,`id=${id}`);
             await loadTeam();
             await loadStats();
+            setStatusBanner('Team member deleted successfully.');
         }
         async function editTeam(id) {
             const items = await apiRequest('teamMembers');
@@ -846,62 +941,67 @@
         // ---------- SAVE MODAL ----------
         async function saveModalItem(e) {
             e.preventDefault();
-            const type = window.currentModalType;
-            let route;
-            let payload;
-            if (type === 'music') {
-                route = 'musicReleases';
-                const id = document.getElementById('musicId').value;
-                payload = {
-                    id: id ? parseInt(id) : Date.now(),
-                    year: document.getElementById('musicYear').value,
-                    title: document.getElementById('musicTitle').value,
-                    type: document.getElementById('musicType').value,
-                    cover: document.getElementById('musicCover').value
-                };
-            } else if (type === 'acting') {
-                route = 'actingProjects';
-                const id = document.getElementById('actingId').value;
-                payload = {
-                    id: id ? parseInt(id) : Date.now(),
-                    title: document.getElementById('actingTitle').value,
-                    description: document.getElementById('actingDescription').value,
-                    video: document.getElementById('actingVideo').value,
-                    link: document.getElementById('actingLink').value
-                };
-            } else if (type === 'gallery') {
-                route = 'galleryItems';
-                const id = document.getElementById('galleryId').value;
-                payload = {
-                    id: id ? parseInt(id) : Date.now(),
-                    src: document.getElementById('gallerySrc').value,
-                    title: document.getElementById('galleryTitle').value,
-                    category: document.getElementById('galleryCategory').value
-                };
-            } else if (type === 'team') {
-                route = 'teamMembers';
-                const id = document.getElementById('teamId').value;
-                const skills = document.getElementById('teamSkills').value.split(',').map(s => s.trim());
-                payload = {
-                    id: id ? parseInt(id) : Date.now(),
-                    name: document.getElementById('teamName').value,
-                    role: document.getElementById('teamRole').value,
-                    bio: document.getElementById('teamBio').value,
-                    image: document.getElementById('teamImage').value,
-                    skills: skills
-                };
+            try {
+                const type = window.currentModalType;
+                let route;
+                let payload;
+                if (type === 'music') {
+                    route = 'musicReleases';
+                    const id = document.getElementById('musicId').value;
+                    payload = {
+                        id: id ? parseInt(id) : Date.now(),
+                        year: document.getElementById('musicYear').value,
+                        title: document.getElementById('musicTitle').value,
+                        type: document.getElementById('musicType').value,
+                        cover: document.getElementById('musicCover').value
+                    };
+                } else if (type === 'acting') {
+                    route = 'actingProjects';
+                    const id = document.getElementById('actingId').value;
+                    payload = {
+                        id: id ? parseInt(id) : Date.now(),
+                        title: document.getElementById('actingTitle').value,
+                        description: document.getElementById('actingDescription').value,
+                        video: document.getElementById('actingVideo').value,
+                        link: document.getElementById('actingLink').value
+                    };
+                } else if (type === 'gallery') {
+                    route = 'galleryItems';
+                    const id = document.getElementById('galleryId').value;
+                    payload = {
+                        id: id ? parseInt(id) : Date.now(),
+                        src: document.getElementById('gallerySrc').value,
+                        title: document.getElementById('galleryTitle').value,
+                        category: document.getElementById('galleryCategory').value
+                    };
+                } else if (type === 'team') {
+                    route = 'teamMembers';
+                    const id = document.getElementById('teamId').value;
+                    const skills = document.getElementById('teamSkills').value.split(',').map(s => s.trim());
+                    payload = {
+                        id: id ? parseInt(id) : Date.now(),
+                        name: document.getElementById('teamName').value,
+                        role: document.getElementById('teamRole').value,
+                        bio: document.getElementById('teamBio').value,
+                        image: document.getElementById('teamImage').value,
+                        skills: skills
+                    };
+                }
+                // choose POST for new vs PUT for existing item
+                if (payload) {
+                    const method = payload.id && (await apiRequest(route)).some(i => i.id === payload.id) ? 'PUT' : 'POST';
+                    await apiRequest(route, method, payload);
+                }
+                await loadStats();
+                if (type === 'music') await loadMusic();
+                if (type === 'acting') await loadActing();
+                if (type === 'gallery') await loadGallery();
+                if (type === 'team') await loadTeam();
+                setStatusBanner('Saved successfully.');
+                closeModal();
+            } catch (err) {
+                setStatusBanner(`Save failed: ${err.message}`, true);
             }
-            // choose POST for new vs PUT for existing item
-            if (payload) {
-                const method = payload.id && (await apiRequest(route)).some(i => i.id === payload.id) ? 'PUT' : 'POST';
-                await apiRequest(route, method, payload);
-            }
-            await loadStats();
-            if (type === 'music') await loadMusic();
-            if (type === 'acting') await loadActing();
-            if (type === 'gallery') await loadGallery();
-            if (type === 'team') await loadTeam();
-            closeModal();
         }
 
         function closeModal() {
@@ -930,10 +1030,15 @@
 
         async function clearMessages() {
             if (confirm('Delete all messages?')) {
-                // bulk delete isn't implemented yet; just overwrite with empty array
-                await apiRequest('contactMessages', 'PUT', []);
-                await loadMessages();
-                await loadStats();
+                try {
+                    // bulk delete isn't implemented yet; just overwrite with empty array
+                    await apiRequest('contactMessages', 'PUT', []);
+                    await loadMessages();
+                    await loadStats();
+                    setStatusBanner('All messages have been cleared.');
+                } catch (err) {
+                    setStatusBanner(`Could not clear messages: ${err.message}`, true);
+                }
             }
         }
 

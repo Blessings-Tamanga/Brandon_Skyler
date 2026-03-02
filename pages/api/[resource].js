@@ -9,7 +9,11 @@ const VALID_RESOURCES = new Set([
   'contactMessages'
 ]);
 
-const hasSupabase = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY);
+const hasSupabase = Boolean(
+  process.env.SUPABASE_URL &&
+  (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY) &&
+  supabase
+);
 
 async function handleFileStore(req, res, resource) {
   const data = await readData();
@@ -118,8 +122,15 @@ export default async function handler(req, res) {
     try {
       return await handleSupabaseStore(req, res, resource);
     } catch (err) {
-      console.error('Supabase error, falling back to file store:', err);
-      return handleFileStore(req, res, resource);
+      console.error('Supabase error:', err);
+      if (req.method === 'GET') {
+        // Read-only fallback helps the dashboard load if DB is temporarily unavailable.
+        return handleFileStore(req, res, resource);
+      }
+      return res.status(502).json({
+        error: 'Database write failed. Check Supabase credentials/table permissions.',
+        details: String(err.message || err)
+      });
     }
   }
 
