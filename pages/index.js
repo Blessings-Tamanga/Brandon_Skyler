@@ -134,7 +134,7 @@ export default function Home() {
               <div className="about-text">
                 <h3>Artist Biography</h3>
                 <div className="about-image">
-                  <img src="/Media/clear.png" alt="Brandon Skyler" />
+                  <img src="/Media/Brandon_Sklenar.jpg" alt="Brandon Skyler" />
                 </div>
                 <div>
                   <p>Brandon Tyler Feakins (born June 26, 1990), known professionally as Brandon Skyler, is an accomplished American actor recognized for his compelling roles in acclaimed films including Mapplethorpe, Vice (both 2018), Midway (2019), It Ends with Us (2024), Drop and The Housemaid (both 2025). In television, he gained prominence through his role as Spencer Dutton in the acclaimed series 1923.</p>
@@ -233,7 +233,7 @@ export default function Home() {
               {[0, 1, 2, 3, 4, 5].map((index) => (
                 <div key={index} className="gallery-item">
                   <div className="gallery-image">
-                    <img src="/Media/clear.png" alt={`Gallery ${index + 1}`} />
+                    <img src="/Media/Brandon_Sklenar.jpg" alt={`Gallery ${index + 1}`} />
                     <i className="fas fa-search-plus gallery-zoom-icon"></i>
                   </div>
                   <div className="gallery-overlay">
@@ -257,7 +257,7 @@ export default function Home() {
             <div className="team-grid">
               <div className="team-card">
                 <div className="team-image">
-                  <img src="/Media/clear.png" alt="Brandon Skyler" />
+                  <img src="/Media/Brandon_Sklenar.jpg" alt="Brandon Skyler" />
                 </div>
                 <h3>Brandon Skyler</h3>
                 <p className="team-role">Lead Artist & Creative Director</p>

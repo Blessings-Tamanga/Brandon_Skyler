@@ -751,7 +751,7 @@
             document.getElementById('modalTitle').innerText = item ? 'Edit Gallery Image' : 'Add Gallery Image';
             document.getElementById('modalFields').innerHTML = `
                 <input type="hidden" id="galleryId" value="${item ? item.id : ''}">
-                <input type="text" id="gallerySrc" placeholder="Image path (e.g. Media/clear.png)" value="${item ? item.src : 'Media/clear.png'}" required>
+                <input type="text" id="gallerySrc" placeholder="Image path (e.g. Media/Brandon_Sklenar.jpg)" value="${item ? item.src : 'Media/Brandon_Sklenar.jpg'}" required>
                 <input type="text" id="galleryTitle" placeholder="Title" value="${item ? item.title : ''}" required>
                 <input type="text" id="galleryCategory" placeholder="Category" value="${item ? item.category : ''}" required>
             `;
@@ -792,7 +792,7 @@
                 <input type="text" id="teamName" placeholder="Name" value="${item ? item.name : ''}" required>
                 <input type="text" id="teamRole" placeholder="Role" value="${item ? item.role : ''}" required>
                 <textarea id="teamBio" placeholder="Bio" required>${item ? item.bio : ''}</textarea>
-                <input type="text" id="teamImage" placeholder="Image path" value="${item ? item.image : 'Media/clear.png'}" required>
+                <input type="text" id="teamImage" placeholder="Image path" value="${item ? item.image : 'Media/Brandon_Sklenar.jpg'}" required>
                 <input type="text" id="teamSkills" placeholder="Skills (comma separated)" value="${item ? item.skills.join(', ') : ''}" required>
             `;
             document.getElementById('itemModal').classList.add('active');

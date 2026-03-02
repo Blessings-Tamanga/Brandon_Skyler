@@ -72,12 +72,12 @@ async function handleSubmit(e) {
 
 // Gallery Carousel
 const galleryImages = [
-    'Media/clear.png',
-    'Media/clear.png',
-    'Media/clear.png',
-    'Media/clear.png',
-    'Media/clear.png',
-    'Media/clear.png'
+    'Media/Brandon_Sklenar.jpg',
+    'Media/Brandon_Sklenar.jpg',
+    'Media/Brandon_Sklenar.jpg',
+    'Media/Brandon_Sklenar.jpg',
+    'Media/Brandon_Sklenar.jpg',
+    'Media/Brandon_Sklenar.jpg'
 ];
 
 let currentGalleryIndex = 0;
