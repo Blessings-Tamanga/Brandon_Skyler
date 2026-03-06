@@ -7,8 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css.css">
-    
-   
 </head>
 <body>
     <!-- HEADER/NAVBAR -->
@@ -128,7 +126,6 @@
             <div class="releases-grid" id="releasesGrid">
                 <!-- cards will be injected by JavaScript -->
             </div>
-            </div>
             <div class="view-all">
                 <a href="#" class="btn btn-secondary">View All Releases</a>
             </div>
@@ -140,33 +137,8 @@
         <div class="section-container">
             <h2>Acting & Film</h2>
             <p class="section-subtitle">Career highlights from film and television</p>
-            <div class="acting-grid">
-                <div class="acting-card">
-                    <h3>Television Highlight</h3>
-                    <p><strong>1923 (2022-2025):</strong> Spencer Dutton.</p>
-                    <div class="video-container">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen=""></iframe>
-                    </div>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-
-                <div class="acting-card">
-                    <h3>Notable Films</h3>
-                    <p>Mapplethorpe (2018), Vice (2018), Midway (2019), It Ends with Us (2024), Drop (2025), The Housemaid (2025).</p>
-                    <div class="video-container">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen=""></iframe>
-                    </div>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-
-                <div class="acting-card">
-                    <h3>Award & Key Roles</h3>
-                    <p>Best Actor at the Vienna Independent Film Festival (2022) for Futra Days, plus performances in The Big Ugly (2020), Karen (2021), and Emily the Criminal (2022).</p>
-                    <div class="video-container">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen=""></iframe>
-                    </div>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
+            <div class="acting-grid" id="actingGrid">
+                <!-- cards will be injected by JavaScript -->
             </div>
         </div>
     </section>
@@ -176,72 +148,8 @@
         <div class="section-container">
             <h2>Gallery</h2>
             <p class="section-subtitle">Visual documentation of performances, studio sessions, and behind-the-scenes moments</p>
-            <div class="gallery-grid">
-                <div class="gallery-item" onclick="openGalleryCarousel(0)">
-                    <div class="gallery-image">
-                        <img src="Media/Brandon_Sklenar.jpg" alt="Featured Photoshoot">
-                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
-                    </div>
-                    <div class="gallery-overlay">
-                        <div class="gallery-title">Featured Photoshoot</div>
-                        <div class="gallery-category">Professional Portfolio</div>
-                    </div>
-                </div>
-
-                <div class="gallery-item" onclick="openGalleryCarousel(1)">
-                    <div class="gallery-image">
-                        <img src="Media/Brandon_Sklenar.jpg" alt="Live Performance">
-                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
-                    </div>
-                    <div class="gallery-overlay">
-                        <div class="gallery-title">Live Performance</div>
-                        <div class="gallery-category">Concert Documentation</div>
-                    </div>
-                </div>
-
-                <div class="gallery-item" onclick="openGalleryCarousel(2)">
-                    <div class="gallery-image">
-                        <img src="Media/Brandon_Sklenar.jpg" alt="Music Video Shoot">
-                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
-                    </div>
-                    <div class="gallery-overlay">
-                        <div class="gallery-title">Music Video Shoot</div>
-                        <div class="gallery-category">Production</div>
-                    </div>
-                </div>
-
-                <div class="gallery-item" onclick="openGalleryCarousel(3)">
-                    <div class="gallery-image">
-                        <img src="Media/Brandon_Sklenar.jpg" alt="Studio Session">
-                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
-                    </div>
-                    <div class="gallery-overlay">
-                        <div class="gallery-title">Studio Session</div>
-                        <div class="gallery-category">Behind the Scenes</div>
-                    </div>
-                </div>
-
-                <div class="gallery-item" onclick="openGalleryCarousel(4)">
-                    <div class="gallery-image">
-                        <img src="Media/Brandon_Sklenar.jpg" alt="Event 2025">
-                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
-                    </div>
-                    <div class="gallery-overlay">
-                        <div class="gallery-title">Event 2025</div>
-                        <div class="gallery-category">Special Performance</div>
-                    </div>
-                </div>
-
-                <div class="gallery-item" onclick="openGalleryCarousel(5)">
-                    <div class="gallery-image">
-                        <img src="Media/Brandon_Sklenar.jpg" alt="Collaboration">
-                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
-                    </div>
-                    <div class="gallery-overlay">
-                        <div class="gallery-title">Collaboration</div>
-                        <div class="gallery-category">Featured Artists</div>
-                    </div>
-                </div>
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- cards will be injected by JavaScript -->
             </div>
             <div class="view-all">
                 <a href="#" onclick="openGalleryCarousel(0); return false;" class="btn btn-secondary">View More Photos</a>
@@ -267,90 +175,8 @@
         <div class="section-container">
             <h2>Meet The Team</h2>
             <p class="section-subtitle">Exceptional professionals dedicated to advancing Brandon's artistic vision and brand excellence</p>
-            <div class="team-grid">
-                <div class="team-card">
-                    <div class="team-image">
-                        <img src="Media/Brandon_Sklenar.jpg" alt="Brandon Sklenar">
-                    </div>
-                    <h3>Brandon Sklenar</h3>
-                    <p class="team-role">Lead Actor</p>
-                    <p class="team-bio">American actor known for 1923 and film roles including Mapplethorpe, Vice, Midway, It Ends with Us, and The Housemaid.</p>
-                    <div class="team-skills">
-                        <span class="skill-tag">Songwriting</span>
-                        <span class="skill-tag">Acting</span>
-                        <span class="skill-tag">Vocals</span>
-                    </div>
-                </div>
-
-                <div class="team-card">
-                    <div class="team-image">
-                        <img src="Media/team2.jpg" alt="Music Producer">
-                    </div>
-                    <h3>Music Producer</h3>
-                    <p class="team-role">Sound Engineering & Production</p>
-                    <p class="team-bio">Distinguished specialist in vocal production and advanced sound engineering. Creates sophisticated sonic landscapes for Brandon's releases.</p>
-                    <div class="team-skills">
-                        <span class="skill-tag">Music Production</span>
-                        <span class="skill-tag">Mixing</span>
-                        <span class="skill-tag">Audio Engineering</span>
-                    </div>
-                </div>
-
-                <div class="team-card">
-                    <div class="team-image">
-                        <img src="Media/team3.jpg" alt="Creative Director">
-                    </div>
-                    <h3>Creative Director</h3>
-                    <p class="team-role">Visual & Content Direction</p>
-                    <p class="team-bio">Oversees comprehensive visual strategy and brand aesthetics. Expert in photography, videography, and sophisticated graphic design.</p>
-                    <div class="team-skills">
-                        <span class="skill-tag">Photography</span>
-                        <span class="skill-tag">Videography</span>
-                        <span class="skill-tag">Design</span>
-                    </div>
-                </div>
-
-                <div class="team-card">
-                    <div class="team-image">
-                        <img src="Media/team4.jpg" alt="Marketing Manager">
-                    </div>
-                    <h3>Marketing Manager</h3>
-                    <p class="team-role">Digital Marketing & Promotion</p>
-                    <p class="team-bio">Strategist specializing in comprehensive marketing initiatives. Develops meaningful audience engagement and brand positioning.</p>
-                    <div class="team-skills">
-                        <span class="skill-tag">Digital Marketing</span>
-                        <span class="skill-tag">Social Media</span>
-                        <span class="skill-tag">Strategy</span>
-                    </div>
-                </div>
-
-                <div class="team-card">
-                    <div class="team-image">
-                        <img src="Media/team5.jpg" alt="Web Developer">
-                    </div>
-                    <h3>Web Developer</h3>
-                    <p class="team-role">Technical & Digital Solutions</p>
-                    <p class="team-bio">Manages sophisticated digital infrastructure and online presence. Ensures seamless technical excellence across platforms.</p>
-                    <div class="team-skills">
-                        <span class="skill-tag">Web Development</span>
-                        <span class="skill-tag">Programming</span>
-                        <span class="skill-tag">Tech Solutions</span>
-                    </div>
-                </div>
-
-                <div class="team-card">
-                    <div class="team-image">
-                        <img src="Media/team6.jpg" alt="Project Coordinator">
-                    </div>
-                    <h3>Project Coordinator</h3>
-                    <p class="team-role">Operations & Coordination</p>
-                    <p class="team-bio">Dedicated professional ensuring seamless execution of all projects. Brings expertise in organization and professional coordination.</p>
-                    <div class="team-skills">
-                        <span class="skill-tag">Project Management</span>
-                        <span class="skill-tag">Coordination</span>
-                        <span class="skill-tag">Operations</span>
-                    </div>
-                </div>
+            <div class="team-grid" id="teamGrid">
+                <!-- cards will be injected by JavaScript -->
             </div>
             <div class="view-all">
                 <a href="#" class="btn btn-primary">Join Our Team</a>

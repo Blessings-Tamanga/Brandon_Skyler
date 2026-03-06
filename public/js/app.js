@@ -20,14 +20,14 @@ const themeToggle = document.getElementById('themeToggle');
 themeToggle.addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light-mode');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    themeToggle.textContent = isLight ? 'Dark' : 'Light';
+    themeToggle.textContent = isLight ? '🌙 Dark' : '☀️ Light';
 });
 
 if (localStorage.getItem('theme') === 'light') {
     document.body.classList.add('light-mode');
-    themeToggle.textContent = 'Dark';
+    themeToggle.textContent = '🌙 Dark';
 } else {
-    themeToggle.textContent = 'Light';
+    themeToggle.textContent = '☀️ Light';
 }
 
 // Modal Functions
@@ -45,71 +45,181 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// Form submission: send data to server API instead of just alerting
-async function handleSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const data = {
-        name: form.name.value,
-        email: form.email.value,
-        subject: form.subject.value,
-        message: form.message.value,
-        timestamp: Date.now()
-    };
+// Smooth Scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
+
+// ========== DYNAMIC CONTENT LOADING ==========
+
+// Music Releases
+async function loadMusicReleases() {
     try {
-        await fetch('/api/contactMessages', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        alert('Thank you for your message. We will respond within 24 hours.');
-        form.reset();
-    } catch (err) {
-        console.error(err);
-        alert('There was a problem submitting your message. Please try again later.');
+        const response = await fetch('/api/musicReleases');
+        if (!response.ok) throw new Error('Failed to fetch music releases');
+        const releases = await response.json();
+
+        const grid = document.getElementById('releasesGrid');
+        if (!grid) return;
+
+        if (releases.length === 0) {
+            grid.innerHTML = '<p style="color: var(--text-tertiary);">No releases yet.</p>';
+            return;
+        }
+
+        grid.innerHTML = releases.map(release => `
+            <div class="release-card">
+                <i class="fas ${release.cover || 'fa-music'} release-icon"></i>
+                <h3>${release.title}</h3>
+                <p class="release-year">${release.year}</p>
+                <p class="release-type">${release.type}</p>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading music releases:', error);
+        document.getElementById('releasesGrid').innerHTML = '<p>Unable to load music releases.</p>';
     }
 }
 
-// Gallery Carousel
-const galleryImages = [
-    'Media/Brandon_Sklenar.jpg',
-    'Media/Brandon_Sklenar.jpg',
-    'Media/Brandon_Sklenar.jpg',
-    'Media/Brandon_Sklenar.jpg',
-    'Media/Brandon_Sklenar.jpg',
-    'Media/Brandon_Sklenar.jpg'
-];
+// Acting Projects
+async function loadActingProjects() {
+    try {
+        const response = await fetch('/api/actingProjects');
+        if (!response.ok) throw new Error('Failed to fetch acting projects');
+        const projects = await response.json();
 
-let currentGalleryIndex = 0;
+        const grid = document.getElementById('actingGrid');
+        if (!grid) return;
 
-function openGalleryCarousel(index) {
-    currentGalleryIndex = index;
-    const carouselModal = document.getElementById('carouselModal');
-    carouselModal.classList.add('active');
+        if (projects.length === 0) {
+            grid.innerHTML = '<p style="color: var(--text-tertiary);">No projects yet.</p>';
+            return;
+        }
+
+        grid.innerHTML = projects.map(project => `
+            <div class="acting-card">
+                <h3>${project.title}</h3>
+                <p>${project.description}</p>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/${project.video}" allowfullscreen></iframe>
+                </div>
+                <a href="${project.link}" class="btn btn-primary">View Details</a>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading acting projects:', error);
+    }
+}
+
+// Gallery – store items globally for carousel
+let galleryItems = [];
+
+async function loadGallery() {
+    try {
+        const response = await fetch('/api/galleryItems');
+        if (!response.ok) throw new Error('Failed to fetch gallery');
+        galleryItems = await response.json();
+
+        const grid = document.getElementById('galleryGrid');
+        if (!grid) return;
+
+        if (galleryItems.length === 0) {
+            grid.innerHTML = '<p style="color: var(--text-tertiary);">No gallery images yet.</p>';
+            return;
+        }
+
+        grid.innerHTML = galleryItems.map((item, index) => `
+            <div class="gallery-item" onclick="openGalleryCarousel(${index})">
+                <div class="gallery-image">
+                    <img src="${item.src}" alt="${item.title}">
+                    <i class="fas fa-search-plus gallery-zoom-icon"></i>
+                </div>
+                <div class="gallery-overlay">
+                    <div class="gallery-title">${item.title}</div>
+                    <div class="gallery-category">${item.category}</div>
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('totalImages').textContent = galleryItems.length;
+    } catch (error) {
+        console.error('Error loading gallery:', error);
+    }
+}
+
+// Team
+async function loadTeam() {
+    try {
+        const response = await fetch('/api/teamMembers');
+        if (!response.ok) throw new Error('Failed to fetch team');
+        const team = await response.json();
+
+        const grid = document.getElementById('teamGrid');
+        if (!grid) return;
+
+        if (team.length === 0) {
+            grid.innerHTML = '<p style="color: var(--text-tertiary);">No team members yet.</p>';
+            return;
+        }
+
+        grid.innerHTML = team.map(member => `
+            <div class="team-card">
+                <div class="team-image">
+                    <img src="${member.image}" alt="${member.name}">
+                </div>
+                <h3>${member.name}</h3>
+                <p class="team-role">${member.role}</p>
+                <p class="team-bio">${member.bio}</p>
+                <div class="team-skills">
+                    ${member.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading team:', error);
+    }
+}
+
+// ========== CAROUSEL (uses dynamic galleryItems) ==========
+let currentImageIndex = 0;
+
+window.openGalleryCarousel = function(index) {
+    currentImageIndex = index;
     updateCarouselImage();
-}
+    document.getElementById('carouselModal').classList.add('active');
+};
 
-function closeGalleryCarousel() {
-    const carouselModal = document.getElementById('carouselModal');
-    carouselModal.classList.remove('active');
-}
+window.updateCarouselImage = function() {
+    const img = document.getElementById('carouselImageDisplay');
+    if (galleryItems.length > 0) {
+        img.src = galleryItems[currentImageIndex].src;
+        document.getElementById('currentImageIndex').textContent = currentImageIndex + 1;
+    }
+};
 
-function updateCarouselImage() {
-    const imageDisplay = document.getElementById('carouselImageDisplay');
-    imageDisplay.src = galleryImages[currentGalleryIndex];
-    document.getElementById('currentImageIndex').textContent = currentGalleryIndex + 1;
-    document.getElementById('totalImages').textContent = galleryImages.length;
-}
+window.previousGalleryImage = function() {
+    if (currentImageIndex > 0) {
+        currentImageIndex--;
+        updateCarouselImage();
+    }
+};
 
-function nextGalleryImage() {
-    currentGalleryIndex = (currentGalleryIndex + 1) % galleryImages.length;
-    updateCarouselImage();
-}
+window.nextGalleryImage = function() {
+    if (currentImageIndex < galleryItems.length - 1) {
+        currentImageIndex++;
+        updateCarouselImage();
+    }
+};
 
-function previousGalleryImage() {
-    currentGalleryIndex = (currentGalleryIndex - 1 + galleryImages.length) % galleryImages.length;
-    updateCarouselImage();
-}
+window.closeGalleryCarousel = function() {
+    document.getElementById('carouselModal').classList.remove('active');
+};
 
 // Close carousel on background click
 document.getElementById('carouselModal').addEventListener('click', function(e) {
@@ -128,73 +238,38 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Smooth Scroll
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    });
-});
+// ========== CONTACT FORM ==========
+window.handleSubmit = async function(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        subject: formData.get('subject'),
+        message: formData.get('message'),
+        timestamp: Date.now()
+    };
 
-// Fetch and populate front-end data from API
-async function initializeFrontPage() {
     try {
-        const releases = await fetch('/api/musicReleases').then(r => r.json());
-        const grid = document.getElementById('releasesGrid');
-        if (Array.isArray(releases)) {
-            grid.innerHTML = releases.map(item => `
-                <div class="release-card">
-                    <div class="release-image"><i class="fas ${item.cover}"></i></div>
-                    <div class="release-info">
-                        <div class="release-year">${item.year}</div>
-                        <h3 class="release-title">${item.title}</h3>
-                        <p class="release-type">${item.type}</p>
-                        <a href="#" class="btn btn-primary">Listen Now</a>
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            console.warn('API returned non-array', releases);
-        }
-    } catch (err) {
-        console.error('Failed to load releases', err);
+        const response = await fetch('/api/contactMessages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Failed to send message');
+        alert('Message sent successfully!');
+        form.reset();
+    } catch (error) {
+        alert('Error sending message. Please try again.');
+        console.error(error);
     }
-}
+};
 
-window.addEventListener('DOMContentLoaded', initializeFrontPage);
-
-
-// Function to fetch and render music releases
-async function loadMusicReleases() {
-  try {
-    const response = await fetch('/api/musicReleases');
-    if (!response.ok) throw new Error('Failed to fetch');
-    const releases = await response.json();
-
-    const grid = document.getElementById('releasesGrid');
-    if (!grid) return;
-
-    if (releases.length === 0) {
-      grid.innerHTML = '<p style="color: var(--text-tertiary);">No releases yet.</p>';
-      return;
-    }
-
-    // Build HTML for each release
-    grid.innerHTML = releases.map(release => `
-      <div class="release-card">
-        <i class="fas ${release.cover || 'fa-music'} release-icon"></i>
-        <h3>${release.title}</h3>
-        <p class="release-year">${release.year}</p>
-        <p class="release-type">${release.type}</p>
-      </div>
-    `).join('');
-  } catch (error) {
-    console.error('Error loading music releases:', error);
-  }
-}
-
-// Call it when the page loads
-document.addEventListener('DOMContentLoaded', loadMusicReleases);
+// ========== INITIALIZE ON PAGE LOAD ==========
+document.addEventListener('DOMContentLoaded', () => {
+    loadMusicReleases();
+    loadActingProjects();
+    loadGallery();
+    loadTeam();
+});
