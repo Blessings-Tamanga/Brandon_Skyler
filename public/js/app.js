@@ -166,3 +166,35 @@ async function initializeFrontPage() {
 
 window.addEventListener('DOMContentLoaded', initializeFrontPage);
 
+
+// Function to fetch and render music releases
+async function loadMusicReleases() {
+  try {
+    const response = await fetch('/api/musicReleases');
+    if (!response.ok) throw new Error('Failed to fetch');
+    const releases = await response.json();
+
+    const grid = document.getElementById('releasesGrid');
+    if (!grid) return;
+
+    if (releases.length === 0) {
+      grid.innerHTML = '<p style="color: var(--text-tertiary);">No releases yet.</p>';
+      return;
+    }
+
+    // Build HTML for each release
+    grid.innerHTML = releases.map(release => `
+      <div class="release-card">
+        <i class="fas ${release.cover || 'fa-music'} release-icon"></i>
+        <h3>${release.title}</h3>
+        <p class="release-year">${release.year}</p>
+        <p class="release-type">${release.type}</p>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading music releases:', error);
+  }
+}
+
+// Call it when the page loads
+document.addEventListener('DOMContentLoaded', loadMusicReleases);
