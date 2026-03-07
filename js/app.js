@@ -60,13 +60,22 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 const CONTENT_SYNC_CHANNEL = 'site-content-sync';
 const CONTENT_SYNC_EVENT = 'siteContentUpdatedAt';
 let contentSyncChannel = null;
+const API_REFRESH_INTERVAL_MS = 10000;
+let refreshIntervalId = null;
+
+async function fetchCollection(resource) {
+    const response = await fetch(`/api/${resource}`);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch ${resource} (${response.status})`);
+    }
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+}
 
 // Music Releases
 async function loadMusicReleases() {
     try {
-        const response = await fetch('/api/musicReleases');
-        if (!response.ok) throw new Error('Failed to fetch music releases');
-        const releases = await response.json();
+        const releases = await fetchCollection('musicReleases');
 
         const grid = document.getElementById('releasesGrid');
         if (!grid) return;
@@ -93,9 +102,7 @@ async function loadMusicReleases() {
 // Acting Projects
 async function loadActingProjects() {
     try {
-        const response = await fetch('/api/actingProjects');
-        if (!response.ok) throw new Error('Failed to fetch acting projects');
-        const projects = await response.json();
+        const projects = await fetchCollection('actingProjects');
 
         const grid = document.getElementById('actingGrid');
         if (!grid) return;
@@ -125,9 +132,7 @@ let galleryItems = [];
 
 async function loadGallery() {
     try {
-        const response = await fetch('/api/galleryItems');
-        if (!response.ok) throw new Error('Failed to fetch gallery');
-        galleryItems = await response.json();
+        galleryItems = await fetchCollection('galleryItems');
 
         const grid = document.getElementById('galleryGrid');
         if (!grid) return;
@@ -159,9 +164,7 @@ async function loadGallery() {
 // Team
 async function loadTeam() {
     try {
-        const response = await fetch('/api/teamMembers');
-        if (!response.ok) throw new Error('Failed to fetch team');
-        const team = await response.json();
+        const team = await fetchCollection('teamMembers');
 
         const grid = document.getElementById('teamGrid');
         if (!grid) return;
@@ -180,7 +183,7 @@ async function loadTeam() {
                 <p class="team-role">${member.role}</p>
                 <p class="team-bio">${member.bio}</p>
                 <div class="team-skills">
-                    ${member.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                    ${(Array.isArray(member.skills) ? member.skills : []).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
                 </div>
             </div>
         `).join('');
@@ -295,6 +298,12 @@ window.handleSubmit = async function(event) {
 
 // ========== INITIALIZE ON PAGE LOAD ==========
 document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.protocol === 'file:') {
+        console.warn('API routes are unavailable on file://. Run with `npm run dev` and open http://localhost:3000');
+    }
     setupCrossPageSync();
     refreshDynamicSections();
+    if (!refreshIntervalId) {
+        refreshIntervalId = window.setInterval(refreshDynamicSections, API_REFRESH_INTERVAL_MS);
+    }
 });
