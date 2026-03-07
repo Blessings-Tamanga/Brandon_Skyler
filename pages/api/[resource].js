@@ -9,11 +9,7 @@ const VALID_RESOURCES = new Set([
   'contactMessages'
 ]);
 
-const hasSupabase = Boolean(
-  process.env.SUPABASE_URL &&
-  (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY) &&
-  supabase
-);
+const hasSupabase = Boolean(supabase);
 
 async function handleFileStore(req, res, resource) {
   const data = await readData();

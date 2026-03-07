@@ -951,6 +951,7 @@
             openTeamModal(item);
         }
         function openTeamModal(item = null) {
+            const teamSkills = item && Array.isArray(item.skills) ? item.skills.join(', ') : '';
             document.getElementById('modalTitle').innerText = item ? 'Edit Team Member' : 'Add Team Member';
             document.getElementById('modalFields').innerHTML = `
                 <input type="hidden" id="teamId" value="${item ? item.id : ''}">
@@ -958,7 +959,7 @@
                 <input type="text" id="teamRole" placeholder="Role" value="${item ? item.role : ''}" required>
                 <textarea id="teamBio" placeholder="Bio" required>${item ? item.bio : ''}</textarea>
                 <input type="text" id="teamImage" placeholder="Image path" value="${item ? item.image : 'Media/Brandon_Sklenar.jpg'}" required>
-                <input type="text" id="teamSkills" placeholder="Skills (comma separated)" value="${item ? item.skills.join(', ') : ''}" required>
+                <input type="text" id="teamSkills" placeholder="Skills (comma separated)" value="${teamSkills}" required>
             `;
             document.getElementById('itemModal').classList.add('active');
             window.currentModalType = 'team';
@@ -971,11 +972,12 @@
                 const type = window.currentModalType;
                 let route;
                 let payload;
+                let existingId = null;
                 if (type === 'music') {
                     route = 'musicReleases';
                     const id = document.getElementById('musicId').value;
+                    existingId = id ? parseInt(id, 10) : null;
                     payload = {
-                        id: id ? parseInt(id) : Date.now(),
                         year: document.getElementById('musicYear').value,
                         title: document.getElementById('musicTitle').value,
                         type: document.getElementById('musicType').value,
@@ -984,8 +986,8 @@
                 } else if (type === 'acting') {
                     route = 'actingProjects';
                     const id = document.getElementById('actingId').value;
+                    existingId = id ? parseInt(id, 10) : null;
                     payload = {
-                        id: id ? parseInt(id) : Date.now(),
                         title: document.getElementById('actingTitle').value,
                         description: document.getElementById('actingDescription').value,
                         video: document.getElementById('actingVideo').value,
@@ -994,8 +996,8 @@
                 } else if (type === 'gallery') {
                     route = 'galleryItems';
                     const id = document.getElementById('galleryId').value;
+                    existingId = id ? parseInt(id, 10) : null;
                     payload = {
-                        id: id ? parseInt(id) : Date.now(),
                         src: document.getElementById('gallerySrc').value,
                         title: document.getElementById('galleryTitle').value,
                         category: document.getElementById('galleryCategory').value
@@ -1003,9 +1005,12 @@
                 } else if (type === 'team') {
                     route = 'teamMembers';
                     const id = document.getElementById('teamId').value;
-                    const skills = document.getElementById('teamSkills').value.split(',').map(s => s.trim());
+                    existingId = id ? parseInt(id, 10) : null;
+                    const skills = document.getElementById('teamSkills').value
+                        .split(',')
+                        .map(s => s.trim())
+                        .filter(Boolean);
                     payload = {
-                        id: id ? parseInt(id) : Date.now(),
                         name: document.getElementById('teamName').value,
                         role: document.getElementById('teamRole').value,
                         bio: document.getElementById('teamBio').value,
@@ -1013,9 +1018,10 @@
                         skills: skills
                     };
                 }
-                // choose POST for new vs PUT for existing item
+                // Edit uses PUT with id, new item uses POST.
                 if (payload) {
-                    const method = payload.id && (await apiRequest(route)).some(i => i.id === payload.id) ? 'PUT' : 'POST';
+                    const method = existingId ? 'PUT' : 'POST';
+                    if (existingId) payload.id = existingId;
                     await apiRequest(route, method, payload);
                 }
                 await loadStats();
@@ -1049,7 +1055,7 @@
                 <div class="message-item">
                     <strong>${m.name}</strong> (${m.email}) · <small>${m.subject}</small>
                     <p>${m.message}</p>
-                    <small>${new Date(m.timestamp).toLocaleString()}</small>
+                    <small>${new Date(m.timestamp || m.created_at || Date.now()).toLocaleString()}</small>
                 </div>
             `).join('');
         }
