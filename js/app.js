@@ -64,7 +64,8 @@ const API_REFRESH_INTERVAL_MS = 10000;
 let refreshIntervalId = null;
 
 async function fetchCollection(resource) {
-    const response = await fetch(`/api/${resource}`);
+    const url = `/api/${resource}?_t=${Date.now()}`;
+    const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) {
         throw new Error(`Failed to fetch ${resource} (${response.status})`);
     }
@@ -305,5 +306,12 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshDynamicSections();
     if (!refreshIntervalId) {
         refreshIntervalId = window.setInterval(refreshDynamicSections, API_REFRESH_INTERVAL_MS);
+    }
+});
+
+window.addEventListener('focus', refreshDynamicSections);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        refreshDynamicSections();
     }
 });
