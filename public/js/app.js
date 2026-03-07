@@ -57,6 +57,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // ========== DYNAMIC CONTENT LOADING ==========
+const CONTENT_SYNC_CHANNEL = 'site-content-sync';
+const CONTENT_SYNC_EVENT = 'siteContentUpdatedAt';
+let contentSyncChannel = null;
 
 // Music Releases
 async function loadMusicReleases() {
@@ -186,6 +189,30 @@ async function loadTeam() {
     }
 }
 
+function refreshDynamicSections() {
+    loadMusicReleases();
+    loadActingProjects();
+    loadGallery();
+    loadTeam();
+}
+
+function setupCrossPageSync() {
+    if ('BroadcastChannel' in window) {
+        contentSyncChannel = new BroadcastChannel(CONTENT_SYNC_CHANNEL);
+        contentSyncChannel.onmessage = (event) => {
+            if (event?.data?.type === 'content-updated') {
+                refreshDynamicSections();
+            }
+        };
+    }
+
+    window.addEventListener('storage', (event) => {
+        if (event.key === CONTENT_SYNC_EVENT && event.newValue) {
+            refreshDynamicSections();
+        }
+    });
+}
+
 // ========== CAROUSEL (uses dynamic galleryItems) ==========
 let currentImageIndex = 0;
 
@@ -268,8 +295,6 @@ window.handleSubmit = async function(event) {
 
 // ========== INITIALIZE ON PAGE LOAD ==========
 document.addEventListener('DOMContentLoaded', () => {
-    loadMusicReleases();
-    loadActingProjects();
-    loadGallery();
-    loadTeam();
+    setupCrossPageSync();
+    refreshDynamicSections();
 });

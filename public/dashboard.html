@@ -541,7 +541,7 @@
                 <li>Click <strong>Add</strong> to create a new item.</li>
                 <li>Fill the form fields and click <strong>Save</strong>.</li>
                 <li>Use <strong>Edit</strong> to update an item or <strong>Delete</strong> to remove it.</li>
-                <li>Refresh your website page to confirm updates are visible.</li>
+                <li>If the public page is open in another tab, it updates automatically after save/delete.</li>
             </ol>
         </section>
 
@@ -618,6 +618,29 @@
     </div>
 
     <script>
+        const CONTENT_SYNC_CHANNEL = 'site-content-sync';
+        const CONTENT_SYNC_EVENT = 'siteContentUpdatedAt';
+        const contentSyncChannel = 'BroadcastChannel' in window
+            ? new BroadcastChannel(CONTENT_SYNC_CHANNEL)
+            : null;
+
+        function notifyPublicSiteContentUpdated(resource, method) {
+            const payload = {
+                type: 'content-updated',
+                resource,
+                method,
+                updatedAt: Date.now()
+            };
+            try {
+                localStorage.setItem(CONTENT_SYNC_EVENT, String(payload.updatedAt));
+            } catch (err) {
+                // Ignore storage errors (private mode/quota), channel may still work.
+            }
+            if (contentSyncChannel) {
+                contentSyncChannel.postMessage(payload);
+            }
+        }
+
         // ---------- HELPER: SERVER API REQUEST ----------
         async function apiRequest(resource, method = 'GET', body = null, queryParams = '') {
             let url = `/api/${resource}` + (queryParams ? `?${queryParams}` : '');
@@ -633,6 +656,9 @@
             if (!res.ok) {
                 const details = payload && payload.error ? `: ${payload.error}` : '';
                 throw new Error(`API ${res.status} ${res.statusText}${details}`);
+            }
+            if (method !== 'GET') {
+                notifyPublicSiteContentUpdated(resource, method);
             }
             return payload;
         }
