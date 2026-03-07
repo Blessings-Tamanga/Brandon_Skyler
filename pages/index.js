@@ -14,7 +14,7 @@ export async function getStaticProps() {
   let bodyHtml = bodyMatch ? bodyMatch[1] : html;
 
   // Prevent duplicate script execution; Next injects app.js below.
-  bodyHtml = bodyHtml.replace(/<script[^>]*src=["']\/js\/app\.js["'][^>]*><\/script>/gi, '');
+  bodyHtml = bodyHtml.replace(/<script[^>]*src=["'](?:\/)?js\/app\.js["'][^>]*><\/script>/gi, '');
 
   return {
     props: {

@@ -1,5 +1,13 @@
 {
-  "musicReleases": [],
+  "musicReleases": [
+    {
+      "id": 1772876815824,
+      "year": "2025",
+      "title": "Jogn star",
+      "type": "Single ",
+      "cover": "fa-music"
+    }
+  ],
   "actingProjects": [],
   "galleryItems": [],
   "teamMembers": [],
