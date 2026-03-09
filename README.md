@@ -15,7 +15,7 @@ This repository contains the static front-end for Brandon's portfolio along with
 
 | Resource path        | Description                     |
 |----------------------|---------------------------------|
-| `/api/musicReleases` | music release objects           |
+| `/api/filmses` | ffffffilmbjects           |
 | `/api/actingProjects`| acting project objects          |
 | `/api/galleryItems`  | gallery image metadata          |
 | `/api/teamMembers`   | team member profiles            |
@@ -24,7 +24,7 @@ This repository contains the static front-end for Brandon's portfolio along with
 Supported HTTP methods: `GET`, `POST`, `PUT`, `DELETE`. Example:
 
 ```bash
-curl -X POST https://yourdomain.vercel.app/api/musicReleases -d '{"id":123, "title":"New"}' -H "Content-Type:application/json"
+curl -X POST https://yourdomain.vercel.app/api/filmses -d '{"id":123, "title":"New"}' -H "Content-Type:application/json"
 ```
 
 ## Running locally
@@ -53,7 +53,7 @@ curl -X POST https://yourdomain.vercel.app/api/musicReleases -d '{"id":123, "tit
 
 > **Persistence warning:** the example backend uses a local JSON file which is fine for prototype/demo, but Vercel serverless functions have an ephemeral filesystem. Data written to `data.json` will be lost on each deployment. Below are a couple of free-tier options you can integrate immediately:
 >
-> * **Supabase** – open‑source hosted Postgres with a generous free tier. The code already includes Supabase support; just create a project, add tables matching the resource names (`musicReleases`, `actingProjects`, etc.), then add `SUPABASE_URL` and `SUPABASE_ANON_KEY` as environment variables in your Vercel dashboard. The API handler will automatically use Supabase when those vars are set.
+> * **Supabase** – open‑source hosted Postgres with a generous free tier. The code already includes Supabase support; just create a project, add tables matching the resource names (`filmses`, `actingProjects`, etc.), then add `SUPABASE_URL` and `SUPABASE_ANON_KEY` as environment variables in your Vercel dashboard. The API handler will automatically use Supabase when those vars are set.
 > * **Vercel KV** – a serverless key‑value store available on all Vercel accounts (free tier). You could adapt `lib/db.js` to read/write from `@vercel/kv` instead.
 >
 > Other free services you might consider include Firebase Realtime Database / Firestore, MongoDB Atlas, or a free PostgreSQL plan on Railway/Planetscale. Use whatever fits your comfort level; just update `pages/api/[resource].js` accordingly.

@@ -464,6 +464,42 @@
             background: rgba(168, 97, 201, 0.06);
         }
 
+        .upload-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.6rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .upload-inline-btn {
+            white-space: nowrap;
+            padding: 0.8rem 1rem;
+        }
+
+        .upload-hint {
+            color: var(--text-tertiary);
+            font-size: 0.82rem;
+            margin-top: -0.45rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .upload-preview {
+            width: 100%;
+            height: 150px;
+            border-radius: 3px;
+            border: 1px solid rgba(168, 97, 201, 0.2);
+            object-fit: cover;
+            margin-bottom: 0.75rem;
+            background: rgba(168, 97, 201, 0.04);
+        }
+
+        .upload-file-input {
+            margin-bottom: 0;
+            padding: 0.7rem 0.85rem;
+        }
+
+
         .modal-actions {
             display: flex;
             justify-content: flex-end;
@@ -504,6 +540,7 @@
             .tab-btn {
                 padding: 0.5rem 1rem;
             }
+
         }
         @media (max-width: 480px) {
             .stats-grid {
@@ -537,7 +574,7 @@
         <section class="quick-guide">
             <h2>Simple Guide (For First-Time Users)</h2>
             <ol>
-                <li>Click a tab: Music, Acting, Gallery, Team, or Messages.</li>
+                <li>Click a tab: Filmography, Acting, Gallery, Team, or Messages.</li>
                 <li>Click <strong>Add</strong> to create a new item.</li>
                 <li>Fill the form fields and click <strong>Save</strong>.</li>
                 <li>Use <strong>Edit</strong> to update an item or <strong>Delete</strong> to remove it.</li>
@@ -550,20 +587,20 @@
 
         <!-- Tabs -->
         <div class="section-tabs">
-            <button class="tab-btn active" data-tab="music">Music</button>
+            <button class="tab-btn active" data-tab="films">Filmography</button>
             <button class="tab-btn" data-tab="acting">Acting</button>
             <button class="tab-btn" data-tab="gallery">Gallery</button>
             <button class="tab-btn" data-tab="team">Team</button>
             <button class="tab-btn" data-tab="messages">Messages</button>
         </div>
 
-        <!-- MUSIC PANEL -->
-        <div id="musicPanel" class="admin-panel active">
+        <!-- FILMOGRAPHY PANEL -->
+        <div id="filmsPanel" class="admin-panel active">
             <div class="panel-header">
-                <h2>Manage Music Releases</h2>
-                <button class="btn btn-primary" id="addMusicBtn">+ Add Release</button>
+                <h2>Manage Filmography</h2>
+                <button class="btn btn-primary" id="addFilmsBtn">+ Add Project</button>
             </div>
-            <div id="musicList" class="item-list"></div>
+            <div id="filmsList" class="item-list"></div>
         </div>
 
         <!-- ACTING PANEL -->
@@ -700,7 +737,7 @@
                 try {
                     await loadSystemStatus();
                     await loadStats();
-                    await loadMusic();
+                    await loadFilms();
                     await loadActing();
                     await loadGallery();
                     await loadTeam();
@@ -726,7 +763,7 @@
             // fire-and-forget is okay, but we want stats to appear quickly
             loadSystemStatus();
             loadStats();
-            loadMusic();
+            loadFilms();
             loadActing();
             loadGallery();
             loadTeam();
@@ -736,15 +773,15 @@
         // ---------- STATS ----------
         async function loadStats() {
             // grab all collections in parallel
-            const [music, acting, gallery, team, messages] = await Promise.all([
-                apiRequest('musicReleases'),
+            const [films, acting, gallery, team, messages] = await Promise.all([
+                apiRequest('filmReleases'),
                 apiRequest('actingProjects'),
                 apiRequest('galleryItems'),
                 apiRequest('teamMembers'),
                 apiRequest('contactMessages')
             ]);
             document.getElementById('statsContainer').innerHTML = `
-                <div class="stat-card"><h3>${music.length}</h3><p>Music Releases</p></div>
+                <div class="stat-card"><h3>${films.length}</h3><p>Filmography Projects</p></div>
                 <div class="stat-card"><h3>${acting.length}</h3><p>Acting Projects</p></div>
                 <div class="stat-card"><h3>${gallery.length}</h3><p>Gallery Images</p></div>
                 <div class="stat-card"><h3>${team.length}</h3><p>Team Members</p></div>
@@ -770,7 +807,7 @@
                 if (e.key === 'Enter') handleLogin();
             });
             document.getElementById('logoutBtn').addEventListener('click', logout);
-            document.getElementById('addMusicBtn').addEventListener('click', () => openMusicModal());
+            document.getElementById('addFilmsBtn').addEventListener('click', () => openFilmsModal());
             document.getElementById('addActingBtn').addEventListener('click', () => openActingModal());
             document.getElementById('addGalleryBtn').addEventListener('click', () => openGalleryModal());
             document.getElementById('addTeamBtn').addEventListener('click', () => openTeamModal());
@@ -786,8 +823,8 @@
                 const action = actionBtn.dataset.action;
                 const id = Number(actionBtn.dataset.id);
                 try {
-                    if (action === 'edit-music') await editMusic(id);
-                    if (action === 'delete-music') await deleteMusic(id);
+                    if (action === 'edit-films') await editFilms(id);
+                    if (action === 'delete-films') await deleteFilms(id);
                     if (action === 'edit-acting') await editActing(id);
                     if (action === 'delete-acting') await deleteActing(id);
                     if (action === 'edit-gallery') await editGallery(id);
@@ -800,45 +837,53 @@
             });
         }
 
-        // ---------- MUSIC CRUD ----------
-        async function loadMusic() {
-            const items = await apiRequest('musicReleases');
-            document.getElementById('musicList').innerHTML = items.map(item => `
+        // ---------- FILMOGRAPHY CRUD ----------
+        async function loadFilms() {
+            const items = await apiRequest('filmReleases');
+            document.getElementById('filmsList').innerHTML = items.map(item => `
                 <div class="item-card">
                     <div class="item-info">
                         <h4>${item.title} (${item.year})</h4>
-                        <p>${item.type}</p>
+                        <p>${item.role || item.type || 'Role not set'}</p>
+                        <img src="${item.poster || item.cover || 'Media/Brandon_Sklenar.jpg'}" alt="${item.title}" style="width:64px;height:64px;object-fit:cover;border-radius:3px;margin-top:0.5rem;">
                     </div>
                     <div class="item-actions">
-                        <button data-action="edit-music" data-id="${item.id}">Edit</button>
-                        <button data-action="delete-music" data-id="${item.id}">Delete</button>
+                        <button data-action="edit-films" data-id="${item.id}">Edit</button>
+                        <button data-action="delete-films" data-id="${item.id}">Delete</button>
                     </div>
                 </div>
             `).join('');
         }
-        async function deleteMusic(id) {
-            if (!confirm('Delete this music release?')) return;
-            await apiRequest('musicReleases', 'DELETE', null, `id=${id}`);
-            await loadMusic();
+        async function deleteFilms(id) {
+            if (!confirm('Delete this film project?')) return;
+            await apiRequest('filmReleases', 'DELETE', null, `id=${id}`);
+            await loadFilms();
             await loadStats();
-            setStatusBanner('Music release deleted successfully.');
+            setStatusBanner('Film project deleted successfully.');
         }
-        async function editMusic(id) {
-            const items = await apiRequest('musicReleases');
+        async function editFilms(id) {
+            const items = await apiRequest('filmReleases');
             const item = items.find(i => i.id === id);
-            openMusicModal(item);
+            openFilmsModal(item);
         }
-        function openMusicModal(item = null) {
-            document.getElementById('modalTitle').innerText = item ? 'Edit Music Release' : 'Add Music Release';
+        function openFilmsModal(item = null) {
+            document.getElementById('modalTitle').innerText = item ? 'Edit Film Project' : 'Add Film Project';
             document.getElementById('modalFields').innerHTML = `
-                <input type="hidden" id="musicId" value="${item ? item.id : ''}">
-                <input type="text" id="musicYear" placeholder="Year" value="${item ? item.year : ''}" required>
-                <input type="text" id="musicTitle" placeholder="Title" value="${item ? item.title : ''}" required>
-                <input type="text" id="musicType" placeholder="Type (Single/Album)" value="${item ? item.type : ''}" required>
-                <input type="text" id="musicCover" placeholder="Cover icon class (e.g. fa-music)" value="${item ? item.cover : 'fa-music'}" required>
+                <input type="hidden" id="filmId" value="${item ? item.id : ''}">
+                <input type="text" id="filmTitle" placeholder="Enter movie or TV show title" value="${item ? item.title : ''}" required>
+                <input type="text" id="filmYear" placeholder="Year of release (e.g. 2024)" value="${item ? item.year : ''}" required>
+                <input type="text" id="filmRole" placeholder="Character played by the actor" value="${item ? (item.role || item.type || '') : ''}" required>
+                <input type="hidden" id="filmPoster" value="${item ? (item.poster || item.cover || '') : ''}" required>
+                <img id="filmPosterPreview" class="upload-preview" src="${item ? (item.poster || item.cover || 'Media/Brandon_Sklenar.jpg') : 'Media/Brandon_Sklenar.jpg'}" alt="Film poster preview">
+                <div class="upload-row">
+                    <input type="file" id="filmPosterFile" class="upload-file-input" accept="image/*">
+                    <button type="button" class="btn btn-primary upload-inline-btn" onclick="uploadModalImage('filmPosterFile','filmPoster','filmPosterPreview','film poster')">Upload Poster</button>
+                </div>
+                <p class="upload-hint">Upload from your local machine. This replaces manual path entry.</p>
+                <input type="text" id="filmTrailerUrl" placeholder="Paste YouTube trailer link" value="${item ? (item.trailerUrl || item.trailer || '') : ''}" required>
             `;
             document.getElementById('itemModal').classList.add('active');
-            window.currentModalType = 'music';
+            window.currentModalType = 'films';
         }
 
         // ---------- ACTING CRUD ----------
@@ -890,6 +935,7 @@
                     <div class="item-info">
                         <h4>${item.title}</h4>
                         <p>${item.category}</p>
+                        <img src="${item.src}" alt="${item.title}" style="width:64px;height:64px;object-fit:cover;border-radius:3px;margin-top:0.5rem;">
                     </div>
                     <div class="item-actions">
                         <button data-action="edit-gallery" data-id="${item.id}">Edit</button>
@@ -900,7 +946,16 @@
         }
         async function deleteGallery(id) {
             if (!confirm('Delete this gallery image?')) return;
+            const items = await apiRequest('galleryItems');
+            const item = items.find(i => i.id === id);
             await apiRequest('galleryItems','DELETE',null,`id=${id}`);
+            if (item && item.src) {
+                try {
+                    await fetch(`/api/galleryUpload?src=${encodeURIComponent(item.src)}`, { method: 'DELETE' });
+                } catch (err) {
+                    // keep gallery CRUD resilient even if file cleanup fails
+                }
+            }
             await loadGallery();
             await loadStats();
             setStatusBanner('Gallery image deleted successfully.');
@@ -914,12 +969,61 @@
             document.getElementById('modalTitle').innerText = item ? 'Edit Gallery Image' : 'Add Gallery Image';
             document.getElementById('modalFields').innerHTML = `
                 <input type="hidden" id="galleryId" value="${item ? item.id : ''}">
-                <input type="text" id="gallerySrc" placeholder="Image path (e.g. Media/Brandon_Sklenar.jpg)" value="${item ? item.src : 'Media/Brandon_Sklenar.jpg'}" required>
+                <input type="hidden" id="gallerySrc" value="${item ? item.src : ''}" required>
+                <img id="gallerySrcPreview" class="upload-preview" src="${item ? item.src : 'Media/Brandon_Sklenar.jpg'}" alt="Gallery image preview">
+                <div class="upload-row">
+                    <input type="file" id="gallerySrcFile" class="upload-file-input" accept="image/*">
+                    <button type="button" class="btn btn-primary upload-inline-btn" onclick="uploadModalImage('gallerySrcFile','gallerySrc','gallerySrcPreview','gallery image')">Upload Image</button>
+                </div>
+                <p class="upload-hint">Upload from your local machine.</p>
                 <input type="text" id="galleryTitle" placeholder="Title" value="${item ? item.title : ''}" required>
                 <input type="text" id="galleryCategory" placeholder="Category" value="${item ? item.category : ''}" required>
             `;
             document.getElementById('itemModal').classList.add('active');
             window.currentModalType = 'gallery';
+        }
+
+        async function uploadModalImage(fileInputId, targetInputId, previewId, label) {
+            const fileInput = document.getElementById(fileInputId);
+            const targetInput = document.getElementById(targetInputId);
+            const preview = document.getElementById(previewId);
+            const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+            if (!file) {
+                setStatusBanner(`Please choose a ${label} file first.`, true);
+                return;
+            }
+
+            const toBase64 = (blob) => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+
+            try {
+                const base64 = await toBase64(file);
+                const uploadRes = await fetch('/api/galleryUpload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fileName: file.name,
+                        mimeType: file.type,
+                        base64
+                    })
+                });
+                const uploadPayload = await uploadRes.json();
+                if (!uploadRes.ok) {
+                    throw new Error(uploadPayload?.error || 'Upload failed');
+                }
+
+                if (targetInput) targetInput.value = uploadPayload.src;
+                if (preview) preview.src = uploadPayload.src;
+                if (fileInput) fileInput.value = '';
+                setStatusBanner(`${label} uploaded successfully.`);
+            } catch (err) {
+                setStatusBanner(`Upload failed: ${err.message}`, true);
+            }
         }
 
         // ---------- TEAM CRUD ----------
@@ -958,7 +1062,13 @@
                 <input type="text" id="teamName" placeholder="Name" value="${item ? item.name : ''}" required>
                 <input type="text" id="teamRole" placeholder="Role" value="${item ? item.role : ''}" required>
                 <textarea id="teamBio" placeholder="Bio" required>${item ? item.bio : ''}</textarea>
-                <input type="text" id="teamImage" placeholder="Image path" value="${item ? item.image : 'Media/Brandon_Sklenar.jpg'}" required>
+                <input type="hidden" id="teamImage" value="${item ? item.image : 'Media/Brandon_Sklenar.jpg'}" required>
+                <img id="teamImagePreview" class="upload-preview" src="${item ? item.image : 'Media/Brandon_Sklenar.jpg'}" alt="Team member image preview">
+                <div class="upload-row">
+                    <input type="file" id="teamImageFile" class="upload-file-input" accept="image/*">
+                    <button type="button" class="btn btn-primary upload-inline-btn" onclick="uploadModalImage('teamImageFile','teamImage','teamImagePreview','team image')">Upload Image</button>
+                </div>
+                <p class="upload-hint">Upload from your local machine. This replaces manual path entry.</p>
                 <input type="text" id="teamSkills" placeholder="Skills (comma separated)" value="${teamSkills}" required>
             `;
             document.getElementById('itemModal').classList.add('active');
@@ -973,15 +1083,16 @@
                 let route;
                 let payload;
                 let existingId = null;
-                if (type === 'music') {
-                    route = 'musicReleases';
-                    const id = document.getElementById('musicId').value;
+                if (type === 'films') {
+                    route = 'filmReleases';
+                    const id = document.getElementById('filmId').value;
                     existingId = id ? parseInt(id, 10) : null;
                     payload = {
-                        year: document.getElementById('musicYear').value,
-                        title: document.getElementById('musicTitle').value,
-                        type: document.getElementById('musicType').value,
-                        cover: document.getElementById('musicCover').value
+                        title: document.getElementById('filmTitle').value,
+                        year: document.getElementById('filmYear').value,
+                        role: document.getElementById('filmRole').value,
+                        poster: document.getElementById('filmPoster').value,
+                        trailerUrl: document.getElementById('filmTrailerUrl').value
                     };
                 } else if (type === 'acting') {
                     route = 'actingProjects';
@@ -997,8 +1108,12 @@
                     route = 'galleryItems';
                     const id = document.getElementById('galleryId').value;
                     existingId = id ? parseInt(id, 10) : null;
+                    const gallerySrc = document.getElementById('gallerySrc').value;
+                    if (!gallerySrc) {
+                        throw new Error('Please upload or provide a gallery image.');
+                    }
                     payload = {
-                        src: document.getElementById('gallerySrc').value,
+                        src: gallerySrc,
                         title: document.getElementById('galleryTitle').value,
                         category: document.getElementById('galleryCategory').value
                     };
@@ -1025,7 +1140,7 @@
                     await apiRequest(route, method, payload);
                 }
                 await loadStats();
-                if (type === 'music') await loadMusic();
+                if (type === 'films') await loadFilms();
                 if (type === 'acting') await loadActing();
                 if (type === 'gallery') await loadGallery();
                 if (type === 'team') await loadTeam();
@@ -1086,18 +1201,19 @@
         window.handleLogin = handleLogin;
         window.logout = logout;
         window.loadStats = loadStats;
-        window.loadMusic = loadMusic;
+        window.loadFilms = loadFilms;
         window.loadActing = loadActing;
         window.loadGallery = loadGallery;
         window.loadTeam = loadTeam;
         window.loadMessages = loadMessages;
-        window.openMusicModal = openMusicModal;
-        window.editMusic = editMusic;
-        window.deleteMusic = deleteMusic;
+        window.openFilmsModal = openFilmsModal;
+        window.editFilms = editFilms;
+        window.deleteFilms = deleteFilms;
         window.openActingModal = openActingModal;
         window.editActing = editActing;
         window.deleteActing = deleteActing;
         window.openGalleryModal = openGalleryModal;
+        window.uploadModalImage = uploadModalImage;
         window.editGallery = editGallery;
         window.deleteGallery = deleteGallery;
         window.openTeamModal = openTeamModal;

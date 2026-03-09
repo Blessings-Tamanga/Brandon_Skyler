@@ -34,7 +34,7 @@
                 document.getElementById('adminDashboard').style.display = 'block';
                 try {
                     await loadStats();
-                    await loadMusic();
+                    await loadfilm();
                     await loadActing();
                     await loadGallery();
                     await loadTeam();
@@ -58,7 +58,7 @@
             document.getElementById('adminDashboard').style.display = 'block';
             // fire-and-forget is okay, but we want stats to appear quickly
             loadStats();
-            loadMusic();
+            loadfilm();
             loadActing();
             loadGallery();
             loadTeam();
@@ -68,15 +68,15 @@
         // ---------- STATS ----------
         async function loadStats() {
             // grab all collections in parallel
-            const [music, acting, gallery, team, messages] = await Promise.all([
-                apiRequest('musicReleases'),
+            const [film, acting, gallery, team, messages] = await Promise.all([
+                apiRequest('filmReleases'),
                 apiRequest('actingProjects'),
                 apiRequest('galleryItems'),
                 apiRequest('teamMembers'),
                 apiRequest('contactMessages')
             ]);
             document.getElementById('statsContainer').innerHTML = `
-                <div class="stat-card"><h3>${music.length}</h3><p>Music Releases</p></div>
+                <div class="stat-card"><h3>${film.length}</h3><p>film Releases</p></div>
                 <div class="stat-card"><h3>${acting.length}</h3><p>Acting Projects</p></div>
                 <div class="stat-card"><h3>${gallery.length}</h3><p>Gallery Images</p></div>
                 <div class="stat-card"><h3>${team.length}</h3><p>Team Members</p></div>
@@ -99,7 +99,7 @@
         function wireStaticButtons() {
             document.getElementById('loginBtn').addEventListener('click', handleLogin);
             document.getElementById('logoutBtn').addEventListener('click', logout);
-            document.getElementById('addMusicBtn').addEventListener('click', () => openMusicModal());
+            document.getElementById('addfilmBtn').addEventListener('click', () => openfilmModal());
             document.getElementById('addActingBtn').addEventListener('click', () => openActingModal());
             document.getElementById('addGalleryBtn').addEventListener('click', () => openGalleryModal());
             document.getElementById('addTeamBtn').addEventListener('click', () => openTeamModal());
@@ -115,8 +115,8 @@
                 const action = actionBtn.dataset.action;
                 const id = Number(actionBtn.dataset.id);
 
-                if (action === 'edit-music') editMusic(id);
-                if (action === 'delete-music') deleteMusic(id);
+                if (action === 'edit-film') editfilm(id);
+                if (action === 'delete-film') deletefilm(id);
                 if (action === 'edit-acting') editActing(id);
                 if (action === 'delete-acting') deleteActing(id);
                 if (action === 'edit-gallery') editGallery(id);
@@ -126,43 +126,43 @@
             });
         }
 
-        // ---------- MUSIC CRUD ----------
-        async function loadMusic() {
-            const items = await apiRequest('musicReleases');
-            document.getElementById('musicList').innerHTML = items.map(item => `
+        // ---------- film CRUD ----------
+        async function loadfilm() {
+            const items = await apiRequest('filmReleases');
+            document.getElementById('filmList').innerHTML = items.map(item => `
                 <div class="item-card">
                     <div class="item-info">
                         <h4>${item.title} (${item.year})</h4>
                         <p>${item.type}</p>
                     </div>
                     <div class="item-actions">
-                        <button data-action="edit-music" data-id="${item.id}">Edit</button>
-                        <button data-action="delete-music" data-id="${item.id}">Delete</button>
+                        <button data-action="edit-film" data-id="${item.id}">Edit</button>
+                        <button data-action="delete-film" data-id="${item.id}">Delete</button>
                     </div>
                 </div>
             `).join('');
         }
-        async function deleteMusic(id) {
-            await apiRequest('musicReleases', 'DELETE', null, `id=${id}`);
-            await loadMusic();
+        async function deletefilm(id) {
+            await apiRequest('filmReleases', 'DELETE', null, `id=${id}`);
+            await loadfilm();
             await loadStats();
         }
-        async function editMusic(id) {
-            const items = await apiRequest('musicReleases');
+        async function editfilm(id) {
+            const items = await apiRequest('filmReleases');
             const item = items.find(i => i.id === id);
-            openMusicModal(item);
+            openfilmModal(item);
         }
-        function openMusicModal(item = null) {
-            document.getElementById('modalTitle').innerText = item ? 'Edit Music Release' : 'Add Music Release';
+        function openfilmModal(item = null) {
+            document.getElementById('modalTitle').innerText = item ? 'Edit film Release' : 'Add film Release';
             document.getElementById('modalFields').innerHTML = `
-                <input type="hidden" id="musicId" value="${item ? item.id : ''}">
-                <input type="text" id="musicYear" placeholder="Year" value="${item ? item.year : ''}" required>
-                <input type="text" id="musicTitle" placeholder="Title" value="${item ? item.title : ''}" required>
-                <input type="text" id="musicType" placeholder="Type (Single/Album)" value="${item ? item.type : ''}" required>
-                <input type="text" id="musicCover" placeholder="Cover icon class (e.g. fa-music)" value="${item ? item.cover : 'fa-music'}" required>
+                <input type="hidden" id="filmId" value="${item ? item.id : ''}">
+                <input type="text" id="filmYear" placeholder="Year" value="${item ? item.year : ''}" required>
+                <input type="text" id="filmTitle" placeholder="Title" value="${item ? item.title : ''}" required>
+                <input type="text" id="filmType" placeholder="Type (Single/Album)" value="${item ? item.type : ''}" required>
+                <input type="text" id="filmCover" placeholder="Cover icon class (e.g. fa-film)" value="${item ? item.cover : 'fa-film'}" required>
             `;
             document.getElementById('itemModal').classList.add('active');
-            window.currentModalType = 'music';
+            window.currentModalType = 'film';
         }
 
         // ---------- ACTING CRUD ----------
@@ -288,15 +288,15 @@
             const type = window.currentModalType;
             let route;
             let payload;
-            if (type === 'music') {
-                route = 'musicReleases';
-                const id = document.getElementById('musicId').value;
+            if (type === 'film') {
+                route = 'filmReleases';
+                const id = document.getElementById('filmId').value;
                 payload = {
                     id: id ? parseInt(id) : Date.now(),
-                    year: document.getElementById('musicYear').value,
-                    title: document.getElementById('musicTitle').value,
-                    type: document.getElementById('musicType').value,
-                    cover: document.getElementById('musicCover').value
+                    year: document.getElementById('filmYear').value,
+                    title: document.getElementById('filmTitle').value,
+                    type: document.getElementById('filmType').value,
+                    cover: document.getElementById('filmCover').value
                 };
             } else if (type === 'acting') {
                 route = 'actingProjects';
@@ -336,7 +336,7 @@
                 await apiRequest(route, method, payload);
             }
             await loadStats();
-            if (type === 'music') await loadMusic();
+            if (type === 'film') await loadfilm();
             if (type === 'acting') await loadActing();
             if (type === 'gallery') await loadGallery();
             if (type === 'team') await loadTeam();
@@ -388,14 +388,14 @@
         window.handleLogin = handleLogin;
         window.logout = logout;
         window.loadStats = loadStats;
-        window.loadMusic = loadMusic;
+        window.loadfilm = loadfilm;
         window.loadActing = loadActing;
         window.loadGallery = loadGallery;
         window.loadTeam = loadTeam;
         window.loadMessages = loadMessages;
-        window.openMusicModal = openMusicModal;
-        window.editMusic = editMusic;
-        window.deleteMusic = deleteMusic;
+        window.openfilmModal = openfilmModal;
+        window.editfilm = editfilm;
+        window.deletefilm = deletefilm;
         window.openActingModal = openActingModal;
         window.editActing = editActing;
         window.deleteActing = deleteActing;

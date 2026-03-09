@@ -1,11 +1,12 @@
 {
-  "musicReleases": [
+  "filmReleases": [
     {
       "id": 1772876815824,
       "year": "2025",
-      "title": "Jogn star",
-      "type": "Single ",
-      "cover": "fa-music"
+      "title": "John Star",
+      "role": "Lead Actor",
+      "poster": "Media/Brandon_Sklenar.jpg",
+      "trailerUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     }
   ],
   "actingProjects": [],

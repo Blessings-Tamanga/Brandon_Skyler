@@ -2,12 +2,20 @@ import { readData, writeData } from '../../lib/db';
 import { supabase } from '../../lib/supabase';
 
 const VALID_RESOURCES = new Set([
-  'musicReleases',
+  'filmReleases',
   'actingProjects',
   'galleryItems',
   'teamMembers',
   'contactMessages'
 ]);
+
+const SUPABASE_TABLE_MAP = {
+  filmReleases: 'filmReleases',
+  actingProjects: 'actingProjects',
+  galleryItems: 'galleryItems',
+  teamMembers: 'teamMembers',
+  contactMessages: 'contactMessages'
+};
 
 const hasSupabase = Boolean(supabase);
 
@@ -62,7 +70,7 @@ async function handleFileStore(req, res, resource) {
 }
 
 async function handleSupabaseStore(req, res, resource) {
-  const table = resource;
+  const table = SUPABASE_TABLE_MAP[resource] || resource;
   switch (req.method) {
     case 'GET': {
       const { data, error } = await supabase.from(table).select('*');
