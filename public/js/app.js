@@ -59,10 +59,12 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
 const CONTENT_SYNC_CHANNEL = 'site-content-sync';
 const CONTENT_SYNC_EVENT = 'siteContentUpdatedAt';
 let contentSyncChannel = null;
-const API_REFRESH_INTERVAL_MS = 10000;
+const API_REFRESH_INTERVAL_MS = 0;
 let refreshIntervalId = null;
 const CACHE_PREFIX = 'publicSiteCache:';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const REALTIME_POLL_INTERVAL_MS = 5000;
+let realtimeEnabled = false;
 
 async function fetchCollection(resource) {
     const url = `/api/${resource}?_t=${Date.now()}`;
@@ -72,6 +74,16 @@ async function fetchCollection(resource) {
     }
     const data = await response.json();
     return Array.isArray(data) ? data : [];
+}
+
+async function fetchAllCollections() {
+    const url = `/api/publicContent?_t=${Date.now()}`;
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) {
+        throw new Error(`Failed to fetch public content (${response.status})`);
+    }
+    const data = await response.json();
+    return data && typeof data === 'object' ? data : {};
 }
 
 function readCachedCollection(resource) {
@@ -310,10 +322,7 @@ function renderTeam(grid, team) {
 }
 
 function refreshDynamicSections() {
-    loadFilms();
-    loadActingProjects();
-    loadGallery();
-    loadTeam();
+    loadAllCollections();
 }
 
 function refreshDynamicSection(resource) {
@@ -335,6 +344,38 @@ function refreshDynamicSection(resource) {
     }
 }
 
+async function loadAllCollections() {
+    try {
+        const cachedFilms = readCachedCollection('filmReleases');
+        const cachedActing = readCachedCollection('actingProjects');
+        const cachedGallery = readCachedCollection('galleryItems');
+        const cachedTeam = readCachedCollection('teamMembers');
+
+        if (cachedFilms) renderFilms(document.getElementById('releasesGrid'), cachedFilms);
+        if (cachedActing) renderActing(document.getElementById('actingGrid'), cachedActing);
+        if (cachedGallery) renderGallery(document.getElementById('galleryGrid'), cachedGallery);
+        if (cachedTeam) renderTeam(document.getElementById('teamGrid'), cachedTeam);
+
+        const payload = await fetchAllCollections();
+        const films = Array.isArray(payload.filmReleases) ? payload.filmReleases : [];
+        const acting = Array.isArray(payload.actingProjects) ? payload.actingProjects : [];
+        const gallery = Array.isArray(payload.galleryItems) ? payload.galleryItems : [];
+        const team = Array.isArray(payload.teamMembers) ? payload.teamMembers : [];
+
+        writeCachedCollection('filmReleases', films);
+        writeCachedCollection('actingProjects', acting);
+        writeCachedCollection('galleryItems', gallery);
+        writeCachedCollection('teamMembers', team);
+
+        renderFilms(document.getElementById('releasesGrid'), films);
+        renderActing(document.getElementById('actingGrid'), acting);
+        renderGallery(document.getElementById('galleryGrid'), gallery);
+        renderTeam(document.getElementById('teamGrid'), team);
+    } catch (error) {
+        console.error('Error loading public content:', error);
+    }
+}
+
 function setupCrossPageSync() {
     if ('BroadcastChannel' in window) {
         contentSyncChannel = new BroadcastChannel(CONTENT_SYNC_CHANNEL);
@@ -350,6 +391,38 @@ function setupCrossPageSync() {
             refreshDynamicSections();
         }
     });
+}
+
+function setupSupabaseRealtime() {
+    const config = window.__SUPABASE__ || {};
+    if (!window.supabase || !window.supabase.createClient) return false;
+    if (!config.url || !config.anonKey) return false;
+
+    try {
+        const client = window.supabase.createClient(config.url, config.anonKey);
+        const tableMap = {
+            filmReleases: 'filmReleases',
+            actingProjects: 'actingProjects',
+            galleryItems: 'galleryItems',
+            teamMembers: 'teamMembers'
+        };
+
+        Object.entries(tableMap).forEach(([resource, table]) => {
+            client
+                .channel(`public:${table}`)
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table },
+                    () => refreshDynamicSection(resource)
+                )
+                .subscribe();
+        });
+
+        return true;
+    } catch (err) {
+        console.warn('Realtime setup failed:', err);
+        return false;
+    }
 }
 
 let currentImageIndex = 0;
@@ -433,8 +506,11 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('API routes are unavailable on file://. Run with `npm run dev` and open http://localhost:3000');
     }
     setupCrossPageSync();
+    realtimeEnabled = setupSupabaseRealtime();
     refreshDynamicSections();
-    if (!refreshIntervalId) {
+    if (!realtimeEnabled && !refreshIntervalId) {
+        refreshIntervalId = window.setInterval(refreshDynamicSections, REALTIME_POLL_INTERVAL_MS);
+    } else if (API_REFRESH_INTERVAL_MS > 0 && !refreshIntervalId) {
         refreshIntervalId = window.setInterval(refreshDynamicSections, API_REFRESH_INTERVAL_MS);
     }
 });

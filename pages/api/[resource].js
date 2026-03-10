@@ -30,6 +30,7 @@ async function handleFileStore(req, res, resource) {
   try {
     switch (req.method) {
       case 'GET':
+        res.setHeader('Cache-Control', 'no-store, max-age=0');
         return res.status(200).json(items);
       case 'POST': {
         const newItem = req.body;
@@ -73,6 +74,7 @@ async function handleSupabaseStore(req, res, resource) {
   const table = SUPABASE_TABLE_MAP[resource] || resource;
   switch (req.method) {
     case 'GET': {
+      res.setHeader('Cache-Control', 'no-store, max-age=0');
       const { data, error } = await supabase.from(table).select('*');
       if (error) throw error;
       return res.status(200).json(data || []);
