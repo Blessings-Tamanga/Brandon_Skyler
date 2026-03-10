@@ -67,6 +67,9 @@ const REALTIME_POLL_INTERVAL_MS = 5000;
 let realtimeEnabled = false;
 
 async function fetchCollection(resource) {
+    const direct = await fetchCollectionDirect(resource);
+    if (direct) return direct;
+
     const url = `/api/${resource}?_t=${Date.now()}`;
     const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) {
@@ -76,7 +79,50 @@ async function fetchCollection(resource) {
     return Array.isArray(data) ? data : [];
 }
 
+function createSupabaseClient() {
+    const config = window.__SUPABASE__ || {};
+    if (!window.supabase || !window.supabase.createClient) return null;
+    if (!config.url || !config.anonKey) return null;
+    return window.supabase.createClient(config.url, config.anonKey);
+}
+
+async function fetchCollectionDirect(resource) {
+    const client = createSupabaseClient();
+    if (!client) return null;
+
+    try {
+        const { data, error } = await client.from(resource).select('*');
+        if (error) throw error;
+        return Array.isArray(data) ? data : [];
+    } catch (err) {
+        console.warn(`Direct fetch failed for ${resource}:`, err);
+        return null;
+    }
+}
+
+async function fetchAllCollectionsDirect() {
+    const client = createSupabaseClient();
+    if (!client) return null;
+
+    const tables = ['filmReleases', 'actingProjects', 'galleryItems', 'teamMembers'];
+    const results = await Promise.all(
+        tables.map(async (table) => {
+            const { data, error } = await client.from(table).select('*');
+            if (error) throw error;
+            return [table, data || []];
+        })
+    );
+
+    return results.reduce((acc, [table, rows]) => {
+        acc[table] = rows;
+        return acc;
+    }, {});
+}
+
 async function fetchAllCollections() {
+    const direct = await fetchAllCollectionsDirect();
+    if (direct) return direct;
+
     const url = `/api/publicContent?_t=${Date.now()}`;
     const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) {
@@ -86,13 +132,13 @@ async function fetchAllCollections() {
     return data && typeof data === 'object' ? data : {};
 }
 
-function readCachedCollection(resource) {
+function readCachedCollection(resource, allowStale = false) {
     try {
         const raw = localStorage.getItem(`${CACHE_PREFIX}${resource}`);
         if (!raw) return null;
         const parsed = JSON.parse(raw);
         if (!parsed || !Array.isArray(parsed.items)) return null;
-        if (Date.now() - (parsed.savedAt || 0) > CACHE_TTL_MS) return null;
+        if (!allowStale && Date.now() - (parsed.savedAt || 0) > CACHE_TTL_MS) return null;
         return parsed.items;
     } catch {
         return null;
@@ -346,10 +392,10 @@ function refreshDynamicSection(resource) {
 
 async function loadAllCollections() {
     try {
-        const cachedFilms = readCachedCollection('filmReleases');
-        const cachedActing = readCachedCollection('actingProjects');
-        const cachedGallery = readCachedCollection('galleryItems');
-        const cachedTeam = readCachedCollection('teamMembers');
+        const cachedFilms = readCachedCollection('filmReleases', true);
+        const cachedActing = readCachedCollection('actingProjects', true);
+        const cachedGallery = readCachedCollection('galleryItems', true);
+        const cachedTeam = readCachedCollection('teamMembers', true);
 
         if (cachedFilms) renderFilms(document.getElementById('releasesGrid'), cachedFilms);
         if (cachedActing) renderActing(document.getElementById('actingGrid'), cachedActing);

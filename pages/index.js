@@ -3,7 +3,7 @@ import path from 'path';
 import Head from 'next/head';
 import Script from 'next/script';
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const filePath = path.join(process.cwd(), 'public', 'index.html');
   const html = fs.readFileSync(filePath, 'utf8');
 

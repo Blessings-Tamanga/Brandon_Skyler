@@ -682,6 +682,7 @@
         async function apiRequest(resource, method = 'GET', body = null, queryParams = '') {
             let url = `/api/${resource}` + (queryParams ? `?${queryParams}` : '');
             const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (method === 'GET') opts.cache = 'no-store';
             if (body) opts.body = JSON.stringify(body);
             const res = await fetch(url, opts);
             let payload;
