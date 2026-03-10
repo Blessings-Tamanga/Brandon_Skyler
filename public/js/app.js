@@ -61,6 +61,8 @@ const CONTENT_SYNC_EVENT = 'siteContentUpdatedAt';
 let contentSyncChannel = null;
 const API_REFRESH_INTERVAL_MS = 10000;
 let refreshIntervalId = null;
+const CACHE_PREFIX = 'publicSiteCache:';
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 async function fetchCollection(resource) {
     const url = `/api/${resource}?_t=${Date.now()}`;
@@ -70,6 +72,38 @@ async function fetchCollection(resource) {
     }
     const data = await response.json();
     return Array.isArray(data) ? data : [];
+}
+
+function readCachedCollection(resource) {
+    try {
+        const raw = localStorage.getItem(`${CACHE_PREFIX}${resource}`);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.items)) return null;
+        if (Date.now() - (parsed.savedAt || 0) > CACHE_TTL_MS) return null;
+        return parsed.items;
+    } catch {
+        return null;
+    }
+}
+
+function writeCachedCollection(resource, items) {
+    try {
+        localStorage.setItem(`${CACHE_PREFIX}${resource}`, JSON.stringify({
+            savedAt: Date.now(),
+            items
+        }));
+    } catch {
+        // ignore cache failures (private mode/quota)
+    }
+}
+
+function hasSameContent(container, data) {
+    if (!container) return false;
+    const nextHash = JSON.stringify(data || []);
+    if (container.dataset.contentHash === nextHash) return true;
+    container.dataset.contentHash = nextHash;
+    return false;
 }
 
 function getYouTubeEmbedUrl(urlOrId = '') {
@@ -96,35 +130,19 @@ function getYouTubeEmbedUrl(urlOrId = '') {
 // Filmography
 async function loadFilms() {
     try {
-        const films = await fetchCollection('filmReleases');
         const grid = document.getElementById('releasesGrid');
         if (!grid) return;
 
-        if (films.length === 0) {
-            grid.innerHTML = '<p style="color: var(--text-tertiary);">No film projects yet.</p>';
-            return;
+        const cached = readCachedCollection('filmReleases');
+        if (cached && !hasSameContent(grid, cached)) {
+            renderFilms(grid, cached);
         }
 
-        grid.innerHTML = films.map((film) => {
-            const filmTitle = film.title || '';
-            const filmYear = film.year || '';
-            const filmRole = film.role || film.type || '';
-            const filmPoster = film.poster || film.cover || 'Media/Brandon_Sklenar.jpg';
-            const filmTrailerUrl = film.trailerUrl || film.trailer || '';
-            return `
-                <div class="release-card">
-                    <div class="release-image">
-                        <img class="release-poster" src="${filmPoster}" alt="${filmTitle} poster">
-                    </div>
-                    <div class="release-info">
-                        <p class="release-year">${filmYear}</p>
-                        <h3 class="release-title">${filmTitle}</h3>
-                        <p class="release-type">${filmRole}</p>
-                        ${filmTrailerUrl ? `<a href="${filmTrailerUrl}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">Watch Trailer</a>` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
+        const films = await fetchCollection('filmReleases');
+        writeCachedCollection('filmReleases', films);
+        if (!hasSameContent(grid, films)) {
+            renderFilms(grid, films);
+        }
     } catch (error) {
         console.error('Error loading filmography:', error);
         const grid = document.getElementById('releasesGrid');
@@ -132,31 +150,71 @@ async function loadFilms() {
     }
 }
 
+function renderFilms(grid, films) {
+    if (!films || films.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-tertiary);">No film projects yet.</p>';
+        return;
+    }
+
+    grid.innerHTML = films.map((film) => {
+        const filmTitle = film.title || '';
+        const filmYear = film.year || '';
+        const filmRole = film.role || film.type || '';
+        const filmPoster = film.poster || film.cover || 'Media/Brandon_Sklenar.jpg';
+        const filmTrailerUrl = film.trailerUrl || film.trailer || '';
+        return `
+            <div class="release-card">
+                <div class="release-image">
+                    <img class="release-poster" src="${filmPoster}" alt="${filmTitle} poster">
+                </div>
+                <div class="release-info">
+                    <p class="release-year">${filmYear}</p>
+                    <h3 class="release-title">${filmTitle}</h3>
+                    <p class="release-type">${filmRole}</p>
+                    ${filmTrailerUrl ? `<a href="${filmTrailerUrl}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">Watch Trailer</a>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 // Acting Projects
 async function loadActingProjects() {
     try {
-        const projects = await fetchCollection('actingProjects');
         const grid = document.getElementById('actingGrid');
         if (!grid) return;
 
-        if (projects.length === 0) {
-            grid.innerHTML = '<p style="color: var(--text-tertiary);">No projects yet.</p>';
-            return;
+        const cached = readCachedCollection('actingProjects');
+        if (cached && !hasSameContent(grid, cached)) {
+            renderActing(grid, cached);
         }
 
-        grid.innerHTML = projects.map((project) => `
-            <div class="acting-card">
-                <h3>${project.title || ''}</h3>
-                <p>${project.description || ''}</p>
-                <div class="video-container">
-                    <iframe src="${getYouTubeEmbedUrl(project.video || '')}" allowfullscreen></iframe>
-                </div>
-                <a href="${project.link || '#'}" class="btn btn-primary">View Details</a>
-            </div>
-        `).join('');
+        const projects = await fetchCollection('actingProjects');
+        writeCachedCollection('actingProjects', projects);
+        if (!hasSameContent(grid, projects)) {
+            renderActing(grid, projects);
+        }
     } catch (error) {
         console.error('Error loading acting projects:', error);
     }
+}
+
+function renderActing(grid, projects) {
+    if (!projects || projects.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-tertiary);">No projects yet.</p>';
+        return;
+    }
+
+    grid.innerHTML = projects.map((project) => `
+        <div class="acting-card">
+            <h3>${project.title || ''}</h3>
+            <p>${project.description || ''}</p>
+            <div class="video-container">
+                <iframe src="${getYouTubeEmbedUrl(project.video || '')}" allowfullscreen></iframe>
+            </div>
+            <a href="${project.link || '#'}" class="btn btn-primary">View Details</a>
+        </div>
+    `).join('');
 }
 
 // Gallery (store items globally for carousel)
@@ -164,62 +222,91 @@ let galleryItems = [];
 
 async function loadGallery() {
     try {
-        galleryItems = await fetchCollection('galleryItems');
         const grid = document.getElementById('galleryGrid');
         if (!grid) return;
 
-        if (galleryItems.length === 0) {
-            grid.innerHTML = '<p style="color: var(--text-tertiary);">No gallery images yet.</p>';
-            return;
+        const cached = readCachedCollection('galleryItems');
+        if (cached) {
+            galleryItems = cached;
+            if (!hasSameContent(grid, cached)) {
+                renderGallery(grid, cached);
+            }
         }
 
-        grid.innerHTML = galleryItems.map((item, index) => `
-            <div class="gallery-item" onclick="openGalleryCarousel(${index})">
-                <div class="gallery-image">
-                    <img src="${item.src}" alt="${item.title}">
-                    <i class="fas fa-search-plus gallery-zoom-icon"></i>
-                </div>
-                <div class="gallery-overlay">
-                    <div class="gallery-title">${item.title}</div>
-                    <div class="gallery-category">${item.category}</div>
-                </div>
-            </div>
-        `).join('');
-
-        document.getElementById('totalImages').textContent = galleryItems.length;
+        const fresh = await fetchCollection('galleryItems');
+        galleryItems = fresh;
+        writeCachedCollection('galleryItems', fresh);
+        if (!hasSameContent(grid, fresh)) {
+            renderGallery(grid, fresh);
+        }
     } catch (error) {
         console.error('Error loading gallery:', error);
     }
 }
 
+function renderGallery(grid, items) {
+    if (!items || items.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-tertiary);">No gallery images yet.</p>';
+        document.getElementById('totalImages').textContent = '0';
+        return;
+    }
+
+    grid.innerHTML = items.map((item, index) => `
+        <div class="gallery-item" onclick="openGalleryCarousel(${index})">
+            <div class="gallery-image">
+                <img src="${item.src}" alt="${item.title}">
+                <i class="fas fa-search-plus gallery-zoom-icon"></i>
+            </div>
+            <div class="gallery-overlay">
+                <div class="gallery-title">${item.title}</div>
+                <div class="gallery-category">${item.category}</div>
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('totalImages').textContent = items.length;
+}
+
 // Team
 async function loadTeam() {
     try {
-        const team = await fetchCollection('teamMembers');
         const grid = document.getElementById('teamGrid');
         if (!grid) return;
 
-        if (team.length === 0) {
-            grid.innerHTML = '<p style="color: var(--text-tertiary);">No team members yet.</p>';
-            return;
+        const cached = readCachedCollection('teamMembers');
+        if (cached && !hasSameContent(grid, cached)) {
+            renderTeam(grid, cached);
         }
 
-        grid.innerHTML = team.map((member) => `
-            <div class="team-card">
-                <div class="team-image">
-                    <img src="${member.image}" alt="${member.name}">
-                </div>
-                <h3>${member.name}</h3>
-                <p class="team-role">${member.role}</p>
-                <p class="team-bio">${member.bio}</p>
-                <div class="team-skills">
-                    ${(Array.isArray(member.skills) ? member.skills : []).map((skill) => `<span class="skill-tag">${skill}</span>`).join('')}
-                </div>
-            </div>
-        `).join('');
+        const team = await fetchCollection('teamMembers');
+        writeCachedCollection('teamMembers', team);
+        if (!hasSameContent(grid, team)) {
+            renderTeam(grid, team);
+        }
     } catch (error) {
         console.error('Error loading team:', error);
     }
+}
+
+function renderTeam(grid, team) {
+    if (!team || team.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-tertiary);">No team members yet.</p>';
+        return;
+    }
+
+    grid.innerHTML = team.map((member) => `
+        <div class="team-card">
+            <div class="team-image">
+                <img src="${member.image}" alt="${member.name}">
+            </div>
+            <h3>${member.name}</h3>
+            <p class="team-role">${member.role}</p>
+            <p class="team-bio">${member.bio}</p>
+            <div class="team-skills">
+                ${(Array.isArray(member.skills) ? member.skills : []).map((skill) => `<span class="skill-tag">${skill}</span>`).join('')}
+            </div>
+        </div>
+    `).join('');
 }
 
 function refreshDynamicSections() {
@@ -229,12 +316,31 @@ function refreshDynamicSections() {
     loadTeam();
 }
 
+function refreshDynamicSection(resource) {
+    switch (resource) {
+        case 'filmReleases':
+            loadFilms();
+            return;
+        case 'actingProjects':
+            loadActingProjects();
+            return;
+        case 'galleryItems':
+            loadGallery();
+            return;
+        case 'teamMembers':
+            loadTeam();
+            return;
+        default:
+            refreshDynamicSections();
+    }
+}
+
 function setupCrossPageSync() {
     if ('BroadcastChannel' in window) {
         contentSyncChannel = new BroadcastChannel(CONTENT_SYNC_CHANNEL);
         contentSyncChannel.onmessage = (event) => {
             if (event?.data?.type === 'content-updated') {
-                refreshDynamicSections();
+                refreshDynamicSection(event.data.resource);
             }
         };
     }

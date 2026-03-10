@@ -76,12 +76,24 @@ async function handleSupabaseStore(req, res, resource) {
       const { data, error } = await supabase.from(table).select('*');
       if (error) throw error;
       return res.status(200).json(data || []);
-    }
-    case 'POST': {
-      const { data, error } = await supabase.from(table).insert(req.body).select();
-      if (error) throw error;
-      return res.status(201).json(data || []);
-    }
+    }case 'POST': {
+  // Ensure payload is always an array
+  const payload = Array.isArray(req.body) ? req.body : [req.body];
+
+  // Fill defaults for missing NOT NULL fields
+  const prepared = payload.map(item => ({
+    title: item.title || 'Untitled',
+    description: item.description || 'No description',
+    video: item.video || '',
+    link: item.link || '#'
+  }));
+
+  // Insert into Supabase
+  const { data, error } = await supabase.from(table).insert(prepared).select();
+  if (error) throw error;
+
+  return res.status(201).json(data || []);
+}
     case 'PUT': {
       if (Array.isArray(req.body)) {
         // Replace full collection (used by dashboard clear-all flows).
