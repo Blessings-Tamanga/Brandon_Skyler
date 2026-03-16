@@ -15,14 +15,7 @@ export default function Document() {
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         />
         <link rel="stylesheet" href="/css.css" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.__SUPABASE__ = ${JSON.stringify({
-              url: process.env.SUPABASE_URL || '',
-              anonKey: process.env.SUPABASE_ANON_KEY || ''
-            })};`
-          }}
-        />
+        <script\n          dangerouslySetInnerHTML={{\n            __html: `window.__SUPABASE__ = ${JSON.stringify({\n              url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',\n              anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''\n            })};`\n          }}\n        />
         <script
           src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.6/dist/umd/supabase.min.js"
           defer
