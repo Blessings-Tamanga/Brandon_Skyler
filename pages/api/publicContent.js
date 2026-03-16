@@ -33,4 +33,23 @@ async function readFromSupabase() {
   }, {});
 }
 
-export async function GET() {\n  try {\n    if (hasSupabase) {\n      const payload = await readFromSupabase();\n      return Response.json(payload);\n    }\n\n    const payload = await readFromFileStore();\n    return Response.json(payload);\n  } catch (err) {\n    console.error('publicContent error:', err);\n    return Response.json({ error: 'Failed to load public content.' }, { status: 500 });\n  }\n}\n\nexport const revalidate = 300; // ISR 5min
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', ['GET']);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
+
+  try {
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
+    if (hasSupabase) {
+      const payload = await readFromSupabase();
+      return res.status(200).json(payload);
+    }
+
+    const payload = await readFromFileStore();
+    return res.status(200).json(payload);
+  } catch (err) {
+    console.error('publicContent error:', err);
+    return res.status(500).json({ error: 'Failed to load public content.' });
+  }
+}

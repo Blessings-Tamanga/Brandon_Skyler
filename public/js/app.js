@@ -62,7 +62,6 @@ let contentSyncChannel = null;
 const API_REFRESH_INTERVAL_MS = 0;
 let refreshIntervalId = null;
 const CACHE_PREFIX = 'publicSiteCache:';
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes for ISR
 const REALTIME_POLL_INTERVAL_MS = 5000;
 let realtimeEnabled = false;
 
@@ -70,7 +69,11 @@ async function fetchCollection(resource) {
     const direct = await fetchCollectionDirect(resource);
     if (direct) return direct;
 
-    const url = `/api/${resource}`;\n    const response = await fetch(url, { cache: 'force-cache', next: { revalidate: 300 } });\n    if (!response.ok) {\n        throw new Error(`Failed to fetch ${resource} (${response.status})`);\n    }
+    const url = `/api/${resource}?_t=${Date.now()}`;
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) {
+        throw new Error(`Failed to fetch ${resource} (${response.status})`);
+    }
     const data = await response.json();
     return Array.isArray(data) ? data : [];
 }
@@ -119,7 +122,11 @@ async function fetchAllCollections() {
     const direct = await fetchAllCollectionsDirect();
     if (direct) return direct;
 
-    const url = `/api/publicContent`;\n    const response = await fetch(url, { cache: 'force-cache', next: { revalidate: 300 } });\n    if (!response.ok) {\n        throw new Error(`Failed to fetch public content (${response.status})`);\n    }
+    const url = `/api/publicContent?_t=${Date.now()}`;
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) {
+        throw new Error(`Failed to fetch public content (${response.status})`);
+    }
     const data = await response.json();
     return data && typeof data === 'object' ? data : {};
 }
@@ -546,7 +553,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCrossPageSync();
     realtimeEnabled = setupSupabaseRealtime();
     refreshDynamicSections();
-    // Reduced polling - rely on ISR caching\n    if (!realtimeEnabled && !refreshIntervalId) {\n        refreshIntervalId = window.setInterval(refreshDynamicSections, 30 * 1000); // 30s fallback\n    }\n});
+    if (!realtimeEnabled && !refreshIntervalId) {
+        refreshIntervalId = window.setInterval(refreshDynamicSections, REALTIME_POLL_INTERVAL_MS);
+    } else if (API_REFRESH_INTERVAL_MS > 0 && !refreshIntervalId) {
+        refreshIntervalId = window.setInterval(refreshDynamicSections, API_REFRESH_INTERVAL_MS);
+    }
+});
 
 window.addEventListener('focus', refreshDynamicSections);
 document.addEventListener('visibilitychange', () => {
