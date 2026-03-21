@@ -6,7 +6,8 @@
     <title>Brandon Skyler - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard.css">
+<link rel="stylesheet" href="dashboard.css">
+    <script src="/js/dashboard-auth.js"></script>
 </head>
 <body>
     <!-- LOGIN OVERLAY -->
@@ -147,13 +148,11 @@
         // ---------- HELPER: SERVER API REQUEST ----------
         async function apiRequest(resource, method = 'GET', body = null, queryParams = '') {
             let url = `/api/${resource}` + (queryParams ? `?${queryParams}` : '');
-            const opts = { 
-              method, 
-              headers: { 
-                'Content-Type': 'application/json',
-                'x-admin-token': 'password' // Matches ADMIN_SECRET=password
-              } 
-            };
+            const headers = { 'Content-Type': 'application/json' };
+            if (window.dashboardAuth?.getToken()) {
+              headers['Authorization'] = `Bearer ${window.dashboardAuth.getToken()}`;
+            }
+            const opts = { method, headers };
             if (method === 'GET') opts.cache = 'no-store';
             if (body) opts.body = JSON.stringify(body);
             const res = await fetch(url, opts);
@@ -226,22 +225,21 @@
         }
 
         function logout() {
-            sessionStorage.removeItem('adminAuth');
-            document.getElementById('loginOverlay').style.display = 'flex';
-            document.getElementById('adminDashboard').style.display = 'none';
+            window.dashboardAuth.clear();
         }
 
-        if (sessionStorage.getItem('adminAuth') === 'true') {
+        // Auto-login if token exists
+        if (window.dashboardAuth?.isAuthenticated()) {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('adminDashboard').style.display = 'block';
-            // fire-and-forget is okay, but we want stats to appear quickly
-            loadSystemStatus();
-            loadStats();
-            loadFilms();
-            loadActing();
-            loadGallery();
-            loadTeam();
-            loadMessages();
+            loadSystemStatus().then(() => {
+                loadStats();
+                loadFilms();
+                loadActing();
+                loadGallery();
+                loadTeam();
+                loadMessages();
+            });
         }
 
         // ---------- STATS ----------
