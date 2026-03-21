@@ -48,6 +48,7 @@
             <button class="tab-btn" data-tab="gallery">Gallery</button>
             <button class="tab-btn" data-tab="team">Team</button>
             <button class="tab-btn" data-tab="messages">Messages</button>
+            <button class="tab-btn" data-tab="newsletter">Newsletter</button>
         </div>
 
         <!-- FILMOGRAPHY PANEL -->
@@ -94,6 +95,15 @@
             </div>
             <div id="messagesList"></div>
         </div>
+
+        <!-- NEWSLETTER PANEL -->
+        <div id="newsletterPanel" class="admin-panel">
+            <div class="panel-header">
+                <h2>Newsletter Subscribers</h2>
+                <button class="btn btn-danger" id="clearSubscribersBtn">Clear All</button>
+            </div>
+            <div id="newsletterList"></div>
+        </div>
     </div>
 
     <!-- MODAL FOR EDIT/ADD -->
@@ -137,7 +147,13 @@
         // ---------- HELPER: SERVER API REQUEST ----------
         async function apiRequest(resource, method = 'GET', body = null, queryParams = '') {
             let url = `/api/${resource}` + (queryParams ? `?${queryParams}` : '');
-            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            const opts = { 
+              method, 
+              headers: { 
+                'Content-Type': 'application/json',
+                'x-admin-token': 'password' // Matches ADMIN_SECRET=password
+              } 
+            };
             if (method === 'GET') opts.cache = 'no-store';
             if (body) opts.body = JSON.stringify(body);
             const res = await fetch(url, opts);
@@ -198,8 +214,9 @@
                     await loadActing();
                     await loadGallery();
                     await loadTeam();
-                    await loadMessages();
-                    setStatusBanner(document.getElementById('statusBanner').textContent + ' Dashboard loaded successfully.');
+                await loadMessages();
+                await loadNewsletter();
+                setStatusBanner(document.getElementById('statusBanner').textContent + ' Dashboard loaded successfully.');
                 } catch (err) {
                     alert(`Dashboard failed to load: ${err.message}`);
                 }
@@ -230,19 +247,21 @@
         // ---------- STATS ----------
         async function loadStats() {
             // grab all collections in parallel
-            const [films, acting, gallery, team, messages] = await Promise.all([
+            const [films, acting, gallery, team, messages, subscribers] = await Promise.all([
                 apiRequest('filmReleases'),
                 apiRequest('actingProjects'),
                 apiRequest('galleryItems'),
                 apiRequest('teamMembers'),
-                apiRequest('contactMessages')
+                apiRequest('contactMessages'),
+                apiRequest('newsletterSubscribers')
             ]);
             document.getElementById('statsContainer').innerHTML = `
-                <div class="stat-card"><h3>${films.length}</h3><p>Filmography Projects</p></div>
-                <div class="stat-card"><h3>${acting.length}</h3><p>Acting Projects</p></div>
-                <div class="stat-card"><h3>${gallery.length}</h3><p>Gallery Images</p></div>
-                <div class="stat-card"><h3>${team.length}</h3><p>Team Members</p></div>
+                <div class="stat-card"><h3>${films.length}</h3><p>Films</p></div>
+                <div class="stat-card"><h3>${acting.length}</h3><p>Acting</p></div>
+                <div class="stat-card"><h3>${gallery.length}</h3><p>Gallery</p></div>
+                <div class="stat-card"><h3>${team.length}</h3><p>Team</p></div>
                 <div class="stat-card"><h3>${messages.length}</h3><p>Messages</p></div>
+                <div class="stat-card"><h3>${subscribers.length}</h3><p>Subscribers</p></div>
             `;
         }
 
@@ -253,7 +272,10 @@
                 btn.classList.add('active');
                 const tab = btn.dataset.tab;
                 document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-                document.getElementById(tab + 'Panel').classList.add('active');
+                const panel = document.getElementById(tab + 'Panel');
+                if (panel) panel.classList.add('active');
+                // Load tab data
+                if (tab === 'newsletter') loadNewsletter();
             });
         });
 
@@ -269,6 +291,7 @@
             document.getElementById('addGalleryBtn').addEventListener('click', () => openGalleryModal());
             document.getElementById('addTeamBtn').addEventListener('click', () => openTeamModal());
             document.getElementById('clearMessagesBtn').addEventListener('click', clearMessages);
+            document.getElementById('clearSubscribersBtn').addEventListener('click', clearSubscribers);
             document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
         }
 

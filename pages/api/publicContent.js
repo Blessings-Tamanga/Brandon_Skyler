@@ -5,7 +5,9 @@ const RESOURCES = [
   'filmReleases',
   'actingProjects',
   'galleryItems',
-  'teamMembers'
+  'teamMembers',
+  'contactMessages',
+  'newsletterSubscribers'
 ];
 
 const hasSupabase = Boolean(supabase);

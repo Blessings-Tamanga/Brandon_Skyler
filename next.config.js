@@ -20,12 +20,11 @@ const nextConfig = {
     return [
       {
         source: '/api/publicContent',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 's-maxage=300, stale-while-revalidate=59',
-          },
-        ],
+        headers: [{ key: 'Cache-Control', value: 's-maxage=300, stale-while-revalidate=59' }],
+      },
+      {
+        source: '/api/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, s-maxage=60' }],
       },
     ];
   },

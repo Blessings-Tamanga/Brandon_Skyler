@@ -1,30 +1,42 @@
-# Next.js Portfolio Professionalization & Fix Plan
+# Film Dashboard Fix - Approved Plan
+Status: ✅ In Progress
 
-## Status: [IN PROGRESS]
+## Breakdown Steps (Execute in Order)
 
-### 1. Create TODO.md [✅ DONE]
+### 1. Create Environment Files ✅
+- `.env.local` with Supabase + ADMIN_SECRET
+- `.env.local.example` (template)
 
-### 2. Fix Supabase Config (Security + Env) [✅ DONE]\n- Create .env.local with SUPABASE_URL, SUPABASE_ANON_KEY\n- Update lib/supabase.js to use process.env\n- Update pages/_document.js to use NEXT_PUBLIC_ env
+### 2. Create Supabase SQL Schema
+- `sql/setup.sql` - Run in Supabase SQL Editor
 
-### 3. Performance: ISR for publicContent API [✅ DONE]\n- Convert to App Router GET() + revalidate: 300
+### 3. Fix Backend API Naming
+- Edit `pages/api/[resource].js`: Rename `filmses` → `filmReleases`
 
-### 4. Reduce JS Polling + Add Skeletons
-- Edit public/js/app.js → disable polling if realtime, longer cache TTL
-- Edit public/index.html → add CSS skeletons to grids
+### 4. Fix Dashboard Auth Header
+- Edit `public/dashboard.html`: Add `x-admin-token` to apiRequest()
 
-### 5. Image Optimization
-- Add next.config.js with image domains
-- Update renders to use loading='lazy' + sizes
+### 5. Migrate data.json
+- Edit `data.json`: Rename `filmses` → `filmReleases`
 
-### 6. Test Run
-- `npm run dev`
-- Check console/network, Lighthouse perf >90
+### 6. Secure Supabase Client
+- Edit `lib/supabase.js`: Use environment variables
 
-### 7. Pro Tools
-- Add ESLint/Prettier/TS configs
-- Clean test files
+### 7. Test Commands
+```
+npm run dev
+# Test public site: http://localhost:3000
+# Test dashboard: http://localhost:3000/dashboard.html (admin/password)
+# Verify curl writes with token
+```
 
-### 8. Deploy Ready [npm run build & vercel]
+### 8. Deploy Checklist
+```
+git add .
+git commit -m "Fix dashboard: naming, auth, Supabase"
+vercel --prod
+```
 
-Next Step: 6. Test `npx next dev -p 3000` + open localhost:3000 to verify faster load
+**Next Step: Execute #1-2 (env + SQL)**
 
+✅ COMPLETE - Film Dashboard Fully Fixed

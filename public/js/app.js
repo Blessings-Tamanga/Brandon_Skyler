@@ -62,14 +62,14 @@ let contentSyncChannel = null;
 const API_REFRESH_INTERVAL_MS = 0;
 let refreshIntervalId = null;
 const CACHE_PREFIX = 'publicSiteCache:';
-const REALTIME_POLL_INTERVAL_MS = 5000;
+const REALTIME_POLL_INTERVAL_MS = 120000; // 2min for content
 let realtimeEnabled = false;
 
 async function fetchCollection(resource) {
     const direct = await fetchCollectionDirect(resource);
     if (direct) return direct;
 
-    const url = `/api/${resource}?_t=${Date.now()}`;
+        const url = `/api/${resource}`;
     const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) {
         throw new Error(`Failed to fetch ${resource} (${response.status})`);
@@ -122,7 +122,7 @@ async function fetchAllCollections() {
     const direct = await fetchAllCollectionsDirect();
     if (direct) return direct;
 
-    const url = `/api/publicContent?_t=${Date.now()}`;
+    const url = `/api/publicContent`;
     const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) {
         throw new Error(`Failed to fetch public content (${response.status})`);
@@ -519,6 +519,29 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+window.handleNewsletterSubmit = async function handleNewsletterSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = {
+        email: formData.get('email'),
+        timestamp: Date.now()
+    };
+
+    try {
+        const response = await fetch('/api/newsletterSubscribers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Subscription failed');
+        alert('Subscribed successfully!');
+        event.target.reset();
+    } catch (error) {
+        alert('Subscription failed. Please try again.');
+        console.error(error);
+    }
+};
+
 window.handleSubmit = async function handleSubmit(event) {
     event.preventDefault();
     const form = event.target;
@@ -552,11 +575,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setupCrossPageSync();
     realtimeEnabled = setupSupabaseRealtime();
-    refreshDynamicSections();
-    if (!realtimeEnabled && !refreshIntervalId) {
+    loadAllCollections();
+    if (!realtimeEnabled) {
         refreshIntervalId = window.setInterval(refreshDynamicSections, REALTIME_POLL_INTERVAL_MS);
-    } else if (API_REFRESH_INTERVAL_MS > 0 && !refreshIntervalId) {
-        refreshIntervalId = window.setInterval(refreshDynamicSections, API_REFRESH_INTERVAL_MS);
     }
 });
 

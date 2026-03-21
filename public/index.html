@@ -242,10 +242,12 @@
                     <div class="newsletter">
                         <h4>Newsletter</h4>
                         <p>Subscribe for exclusive updates, new film projects, and upcoming performance announcements</p>
-                        <div class="newsletter-form">
-                            <input type="email" placeholder="Enter your email" required>
-                            <button type="submit" class="btn btn-primary">Subscribe</button>
-                        </div>
+<div class="newsletter-form">
+                            <form onsubmit="handleNewsletterSubmit(event)">
+                              <input type="email" name="email" placeholder="Enter your email" required>
+                              <button type="submit" class="btn btn-primary">Subscribe</button>
+                            </form>
+                          </div>
                     </div>
                 </div>
             </div>

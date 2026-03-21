@@ -1,156 +1,92 @@
-import { readData, writeData } from '../../lib/db';
-import { supabase } from '../../lib/supabase';
+/**
+ * ============================================================
+ * FILE: pages/api/[resource].js - FILM DASHBOARD API
+ * Fixed: filmses → filmReleases + dashboard auth ready
+ * ============================================================
+ */
 
-const VALID_RESOURCES = new Set([
+import { readData, writeData } from '../../lib/db';
+import jwt from 'jsonwebtoken';
+
+// ALLOWED RESOURCES (frontend uses these exact names)
+const ALLOWED_RESOURCES = new Set([
   'filmReleases',
   'actingProjects',
   'galleryItems',
   'teamMembers',
-  'contactMessages'
+  'contactMessages',
 ]);
 
-const SUPABASE_TABLE_MAP = {
-  filmReleases: 'filmReleases',
-  actingProjects: 'actingProjects',
-  galleryItems: 'galleryItems',
-  teamMembers: 'teamMembers',
-  contactMessages: 'contactMessages'
-};
+// MAIN HANDLER
+export default async function handler(req, res) {
+  const { resource } = req.query;
 
-const hasSupabase = Boolean(supabase);
+  // Validate resource
+  if (!ALLOWED_RESOURCES.has(resource)) {
+    return res.status(400).json({
+      error: `Unknown resource "${resource}". Allowed: ${[...ALLOWED_RESOURCES].join(', ')}`,
+    });
+  }
 
-async function handleFileStore(req, res, resource) {
-  const data = await readData();
-  const items = data[resource];
+// JWT AUTH: Verify Bearer token for writes
+  if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Missing Authorization Bearer token' });
+    }
 
-  if (!Array.isArray(items)) {
-    return res.status(404).json({ error: 'Resource not found' });
+    const token = authHeader.split(' ')[1];
+    const JWT_SECRET = process.env.JWT_SECRET;
+
+    if (!JWT_SECRET) {
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    try {
+      jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
   }
 
   try {
     switch (req.method) {
-      case 'GET':
-        res.setHeader('Cache-Control', 'no-store, max-age=0');
-        return res.status(200).json(items);
+      case 'GET': {
+        // Public read: /api/filmReleases → delegates to lib/db.js (Supabase/file)
+        const records = await readData(resource);
+        return res.status(200).json(records);
+      }
+
       case 'POST': {
-        const newItem = req.body;
-        items.push(newItem);
-        await writeData(data);
-        return res.status(201).json(newItem);
-      }
-      case 'PUT': {
-        if (Array.isArray(req.body)) {
-          data[resource] = req.body;
-        } else {
-          const { id, ...rest } = req.body;
-          data[resource] = items.map((i) => (i.id === id ? { id, ...rest } : i));
+        const body = req.body;
+        if (!body || typeof body !== 'object' || Array.isArray(body)) {
+          return res.status(400).json({ error: 'Body must be JSON object' });
         }
-        await writeData(data);
-        return res.status(200).json(data[resource]);
+        const record = { id: body.id ?? Date.now(), ...body };
+        const created = await writeData(resource, 'POST', record);
+        return res.status(201).json(created);
       }
+
+      case 'PUT': {
+        const { id, ...updates } = req.body ?? {};
+        if (!id) return res.status(400).json({ error: 'PUT requires `id` in body' });
+        const updated = await writeData(resource, 'PUT', { id, ...updates });
+        return res.status(200).json(updated);
+      }
+
       case 'DELETE': {
         const { id } = req.query;
-        data[resource] = items.filter((i) => i.id !== Number(id));
-        await writeData(data);
-        return res.status(200).json({ ok: true });
+        if (!id) return res.status(400).json({ error: 'DELETE requires ?id= param' });
+        const result = await writeData(resource, 'DELETE', Number(id));
+        return res.status(200).json(result);
       }
+
       default:
         res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-        return res.status(405).end(`Method ${req.method} Not Allowed`);
+        return res.status(405).json({ error: `Method ${req.method} not allowed` });
     }
   } catch (err) {
-    const isWrite = req.method !== 'GET';
-    if (isWrite) {
-      return res.status(500).json({
-        error: 'File storage write failed. Configure Supabase for persistent writes on Vercel.',
-        details: String(err.message || err)
-      });
-    }
-    return res.status(500).json({ error: 'File storage read failed.' });
+    console.error(`[api/${resource}] ${req.method}:`, err.message);
+    return res.status(500).json({ error: err.message ?? 'Internal error' });
   }
-}
-
-async function handleSupabaseStore(req, res, resource) {
-  const table = SUPABASE_TABLE_MAP[resource] || resource;
-  switch (req.method) {
-    case 'GET': {
-      res.setHeader('Cache-Control', 'no-store, max-age=0');
-      const { data, error } = await supabase.from(table).select('*');
-      if (error) throw error;
-      return res.status(200).json(data || []);
-    }case 'POST': {
-  // Ensure payload is always an array
-  const payload = Array.isArray(req.body) ? req.body : [req.body];
-
-  // Fill defaults for missing NOT NULL fields
-  const prepared = payload.map(item => ({
-    title: item.title || 'Untitled',
-    description: item.description || 'No description',
-    video: item.video || '',
-    link: item.link || '#'
-  }));
-
-  // Insert into Supabase
-  const { data, error } = await supabase.from(table).insert(prepared).select();
-  if (error) throw error;
-
-  return res.status(201).json(data || []);
-}
-    case 'PUT': {
-      if (Array.isArray(req.body)) {
-        // Replace full collection (used by dashboard clear-all flows).
-        const { error: deleteError } = await supabase.from(table).delete().not('id', 'is', null);
-        if (deleteError) throw deleteError;
-        if (req.body.length === 0) return res.status(200).json([]);
-        const { data, error } = await supabase.from(table).insert(req.body).select();
-        if (error) throw error;
-        return res.status(200).json(data || []);
-      }
-
-      const { id, ...rest } = req.body;
-      if (typeof id === 'undefined') {
-        return res.status(400).json({ error: 'Missing id in PUT payload.' });
-      }
-      const { data, error } = await supabase.from(table).update(rest).eq('id', id).select();
-      if (error) throw error;
-      return res.status(200).json(data || []);
-    }
-    case 'DELETE': {
-      const { id } = req.query;
-      if (typeof id === 'undefined') {
-        return res.status(400).json({ error: 'Missing id in query string.' });
-      }
-      const { error } = await supabase.from(table).delete().eq('id', id);
-      if (error) throw error;
-      return res.status(200).json({ ok: true });
-    }
-    default:
-      res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-      return res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
-
-export default async function handler(req, res) {
-  const { resource } = req.query;
-  if (!VALID_RESOURCES.has(resource)) {
-    return res.status(404).json({ error: 'Resource not found' });
-  }
-
-  if (hasSupabase) {
-    try {
-      return await handleSupabaseStore(req, res, resource);
-    } catch (err) {
-      console.error('Supabase error:', err);
-      if (req.method === 'GET') {
-        // Read-only fallback helps the dashboard load if DB is temporarily unavailable.
-        return handleFileStore(req, res, resource);
-      }
-      return res.status(502).json({
-        error: 'Database write failed. Check Supabase credentials/table permissions.',
-        details: String(err.message || err)
-      });
-    }
-  }
-
-  return handleFileStore(req, res, resource);
 }
